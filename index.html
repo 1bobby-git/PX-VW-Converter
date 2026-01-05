@@ -1,607 +1,348 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ko">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>VW 계산기 · VW 변환기 | PX↔VW 변환 도구</title>
-    <meta
-      name="description"
-      content="VW 계산기 및 VW 변환기: PX를 VW로, VW를 PX로 쉽게 변환하는 무료 온라인 도구. 웹 개발자와 디자이너를 위한 정확한 CSS 단위 계산기."
-    />
-    <meta
-      name="keywords"
-      content="vw 계산기,vw 변환기,px vw 변환,px to vw,vw to px,픽셀 뷰포트 변환,CSS 단위 변환,반응형 디자인 계산기"
-    />
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://benjiepark.com/px-vw-converter" />
-    <meta name="naver-site-verification" content="c9506fad12e128b01f9bdbdc31f38267ca35b08d" />
-    <meta property="og:title" content="VW 계산기 · VW 변환기 | PX↔VW 변환 도구" />
-    <meta
-      property="og:description"
-      content="VW 계산기 및 VW 변환기: PX를 VW로, VW를 PX로 쉽게 변환하는 무료 온라인 도구."
-    />
-    <meta property="og:url" content="https://benjiepark.com/px-vw-converter" />
-    <meta property="og:locale" content="ko_KR" />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="홈" />
-    <meta name="twitter:description" content="만다라트표, 부의금 정산, 블로그, 버킷 리스트" />
-    <link rel="icon" href="/favicon.ico" type="image/x-icon" sizes="1024x1024" />
-    <style>
-      @font-face {
-        font-family: "Geist";
-        font-style: normal;
-        font-weight: 100 900;
-        font-display: swap;
-        src: url("https://benjiepark.com/_next/static/media/ba015fad6dcf6784-s.woff2") format("woff2");
-        unicode-range: u+0100-02ba, u+02bd-02c5, u+02c7-02cc, u+02ce-02d7, u+02dd-02ff, u+0304,
-          u+0308, u+0329, u+1d00-1dbf, u+1e00-1e9f, u+1ef2-1eff, u+2020, u+20a0-20ab, u+20ad-20c0,
-          u+2113, u+2c60-2c7f, u+a720-a7ff;
-      }
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>VW 계산기 · VW 변환기 | PX↔VW 변환 도구</title>
+  <style>
+    :root { color-scheme: light; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; background:#f6f7fb; color:#111; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 24px 16px 48px; }
+    h1 { margin: 6px 0 10px; font-size: 28px; }
+    p.lead { margin: 0 0 18px; color:#333; line-height:1.6; }
+    .grid { display: grid; gap: 14px; grid-template-columns: 1fr; }
+    @media (min-width: 860px){ .grid { grid-template-columns: 1fr 1fr; } }
+    .card { background:#fff; border: 1px solid #e6e8ef; border-radius: 14px; box-shadow: 0 6px 22px rgba(12, 19, 40, 0.06); padding: 16px; }
+    .card h2 { margin: 0 0 10px; font-size: 18px; }
+    .row { display:flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+    label { display:block; font-size: 12px; color:#444; margin: 0 0 6px; }
+    input[type="number"], textarea, select {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #d7dbe7;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+      background:#fff;
+    }
+    textarea { min-height: 160px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; line-height:1.5; }
+    input[type="number"]:focus, textarea:focus, select:focus { border-color:#6b7cff; box-shadow: 0 0 0 3px rgba(107,124,255,0.18); }
+    .col { flex: 1 1 220px; }
+    .btns { display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px; }
+    button {
+      border: 1px solid #d7dbe7;
+      background: #111;
+      color: #fff;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button.secondary { background:#fff; color:#111; }
+    button:active { transform: translateY(1px); }
+    .hint { margin-top:8px; font-size: 12px; color:#666; line-height:1.5; }
+    .kv { display:flex; gap: 12px; flex-wrap: wrap; }
+    .kv .item { flex: 1 1 220px; }
+    .out {
+      font-weight: 700;
+      font-size: 18px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background:#f2f4ff;
+      border: 1px solid #dbe0ff;
+      word-break: break-all;
+    }
+    .check {
+      display:flex; gap:8px; align-items:center; margin: 6px 0 10px;
+      font-size: 13px; color:#222;
+    }
+    .check input { width: 16px; height: 16px; }
+    footer { margin-top: 18px; color:#777; font-size: 12px; text-align:center; }
+    code.k { background:#f0f2f7; padding: 2px 6px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>VW 계산기 · VW 변환기 (PX ↔ VW)</h1>
+    <p class="lead">PX(픽셀)과 VW(뷰포트 너비) 단위를 빠르게 변환하고, CSS 소스의 PX 값을 VW로 일괄 변환할 수 있습니다.</p>
 
-      @font-face {
-        font-family: "Geist";
-        font-style: normal;
-        font-weight: 100 900;
-        font-display: swap;
-        src: url("https://benjiepark.com/_next/static/media/4cf2300e9c8272f7-s.p.woff2") format("woff2");
-        unicode-range: u+00??, u+0131, u+0152-0153, u+02bb-02bc, u+02c6, u+02da, u+02dc, u+0304,
-          u+0308, u+0329, u+2000-206f, u+20ac, u+2122, u+2191, u+2193, u+2212, u+2215, u+feff, u+fffd;
-      }
+    <div class="card" style="margin-bottom:14px;">
+      <div class="row">
+        <div class="col">
+          <label for="viewportWidth">뷰포트 너비 (px)</label>
+          <input id="viewportWidth" type="number" min="1" step="1" value="375">
+          <div class="hint">계산 기준이 되는 화면 너비입니다. 예: 360 / 375 / 414 / 768 / 1024</div>
+        </div>
+        <div class="col">
+          <label for="precision">소수점 자릿수</label>
+          <select id="precision">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+          <div class="hint">출력되는 VW, PX 결과의 소수점 자릿수입니다.</div>
+        </div>
+      </div>
+    </div>
 
-      @font-face {
-        font-family: "Geist Mono";
-        font-style: normal;
-        font-weight: 100 900;
-        font-display: swap;
-        src: url("https://benjiepark.com/_next/static/media/747892c23ea88013-s.woff2") format("woff2");
-        unicode-range: u+0100-02ba, u+02bd-02c5, u+02c7-02cc, u+02ce-02d7, u+02dd-02ff, u+0304,
-          u+0308, u+0329, u+1d00-1dbf, u+1e00-1e9f, u+1ef2-1eff, u+2020, u+20a0-20ab, u+20ad-20c0,
-          u+2113, u+2c60-2c7f, u+a720-a7ff;
-      }
-
-      @font-face {
-        font-family: "Geist Mono";
-        font-style: normal;
-        font-weight: 100 900;
-        font-display: swap;
-        src: url("https://benjiepark.com/_next/static/media/93f479601ee12b01-s.p.woff2") format("woff2");
-        unicode-range: u+00??, u+0131, u+0152-0153, u+02bb-02bc, u+02c6, u+02da, u+02dc, u+0304,
-          u+0308, u+0329, u+2000-206f, u+20ac, u+2122, u+2191, u+2193, u+2212, u+2215, u+feff, u+fffd;
-      }
-
-      :root {
-        --background: #ffffff;
-        --foreground: #171717;
-      }
-
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --background: #0a0a0a;
-          --foreground: #ededed;
-        }
-      }
-
-      * {
-        box-sizing: border-box;
-        padding: 0;
-        margin: 0;
-      }
-
-      html,
-      body {
-        max-width: 100vw;
-        overflow-x: hidden;
-      }
-
-      body {
-        color: var(--foreground);
-        background: var(--background);
-        font-family: "Geist", "Geist Fallback", Arial, Helvetica, sans-serif;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
-
-      a {
-        color: inherit;
-        text-decoration: none;
-      }
-
-      .styles_page__IJJEJ {
-        min-height: 100vh;
-        background: linear-gradient(135deg, #f7fafc, #f1f5f9);
-        padding: 16px;
-      }
-
-      .styles_container__8fUl7 {
-        max-width: 1120px;
-        margin: 0 auto;
-      }
-
-      .styles_header__bXavH {
-        text-align: center;
-        margin-bottom: 16px;
-      }
-
-      .styles_title__vhJtB {
-        color: #0f172a;
-        font-size: 32px;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-      }
-
-      .styles_subtitle__bqI7M {
-        margin-top: 8px;
-        color: #475569;
-        font-size: 16px;
-      }
-
-      .styles_stickyControls__LNq_t {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        margin-bottom: 16px;
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: saturate(120%) blur(6px);
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 16px;
-        box-shadow: 0 8px 20px rgba(2, 6, 23, 0.06);
-      }
-
-      .styles_controlGrid__8ofpU {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 16px;
-      }
-
-      .styles_formGroup__GtFTa {
-        display: flex;
-        flex-direction: column;
-      }
-
-      @media (min-width: 640px) {
-        .styles_controlGrid__8ofpU {
-          grid-template-columns: 1fr 1fr;
-        }
-      }
-
-      .styles_label__MTf2s {
-        display: block;
-        font-size: 13px;
-        font-weight: 600;
-        color: #334155;
-        margin-bottom: 6px;
-      }
-
-      .styles_input__iZ_6r {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid #cbd5e1;
-        border-radius: 10px;
-        background: #fff;
-        color: #0f172a;
-        outline: none;
-        transition: box-shadow 0.15s ease, border-color 0.15s ease;
-      }
-
-      .styles_input__iZ_6r:focus {
-        border-color: #10b981;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
-      }
-
-      .styles_helper__GrPBe {
-        margin-top: 6px;
-        color: #64748b;
-        font-size: 12px;
-      }
-
-      .styles_grid__XfS2R {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 20px;
-      }
-
-      @media (min-width: 1024px) {
-        .styles_grid__XfS2R {
-          grid-template-columns: 1fr 1fr;
-        }
-      }
-
-      .styles_card__Mf8Ci {
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        padding: 20px;
-        box-shadow: 0 6px 18px rgba(2, 6, 23, 0.06);
-      }
-
-      .styles_sectionHeader__Enz7Y {
-        margin-bottom: 14px;
-      }
-
-      .styles_sectionTitle__7CEjs {
-        color: #0f172a;
-        font-size: 20px;
-        font-weight: 700;
-        margin-bottom: 6px;
-      }
-
-      .styles_sectionDesc__9FgFy {
-        color: #64748b;
-        font-size: 14px;
-      }
-
-      .styles_twoColGrid__R42Ct {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 14px;
-        margin-top: 12px;
-      }
-
-      .styles_textarea__PM3iQ {
-        width: 100%;
-        height: 140px;
-        padding: 10px 12px;
-        border: 1px solid #cbd5e1;
-        border-radius: 10px;
-        resize: none;
-        outline: none;
-        background: #fff;
-        color: #0f172a;
-        transition: box-shadow 0.15s ease, border-color 0.15s ease;
-      }
-
-      .styles_textarea__PM3iQ:focus {
-        border-color: #10b981;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
-      }
-
-      .styles_checkboxRow__qwGSo {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin: 12px 0;
-      }
-
-      .styles_checkboxRow__qwGSo input[type="checkbox"] {
-        accent-color: #10b981;
-      }
-
-      .styles_resultReadOnly__7HCH4 {
-        background: #f8fafc;
-        color: #475569;
-      }
-
-      .styles_guide__3p_Uv {
-        margin-top: 24px;
-      }
-
-      .styles_tipCard__RN0mC {
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        padding: 20px;
-        box-shadow: 0 6px 18px rgba(2, 6, 23, 0.06);
-      }
-
-      .styles_list__LNUbF {
-        margin: 8px 0 0 18px;
-        color: #475569;
-      }
-
-      .styles_formula__ECK5R {
-        margin-top: 12px;
-        padding: 12px;
-        border-radius: 10px;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        color: #334155;
-        font-size: 14px;
-      }
-    </style>
-  </head>
-  <body>
-    <main class="styles_page__IJJEJ">
-      <div class="styles_container__8fUl7">
-        <header class="styles_header__bXavH">
-          <h1 class="styles_title__vhJtB">VW 계산기 · VW 변환기 (PX ↔ VW)</h1>
-          <p class="styles_subtitle__bqI7M">
-            VW 계산기와 VW 변환기로 픽셀(PX)과 뷰포트 너비(VW) 단위를 쉽고 정확하게
-            변환하세요.
-          </p>
-        </header>
-
-        <section class="styles_stickyControls__LNq_t">
-          <div class="styles_controlGrid__8ofpU">
-            <div class="styles_formGroup__GtFTa">
-              <label for="viewport-width" class="styles_label__MTf2s">뷰포트 너비 (px)</label>
-              <input
-                id="viewport-width"
-                type="number"
-                inputmode="numeric"
-                class="styles_input__iZ_6r"
-                placeholder="1440"
-                aria-describedby="viewport-desc"
-                value="1440"
-              />
-              <p id="viewport-desc" class="styles_helper__GrPBe">계산 기준이 되는 화면 너비입니다.</p>
-            </div>
-            <div class="styles_formGroup__GtFTa">
-              <label for="decimal-places" class="styles_label__MTf2s">소수점 자릿수</label>
-              <input
-                id="decimal-places"
-                type="number"
-                min="0"
-                max="10"
-                class="styles_input__iZ_6r"
-                value="4"
-              />
-              <p class="styles_helper__GrPBe">표시할 소수점 자릿수를 선택하세요.</p>
-            </div>
+    <div class="grid">
+      <div class="card">
+        <h2>PX → VW 변환</h2>
+        <div class="kv">
+          <div class="item">
+            <label for="pxInput">PX</label>
+            <input id="pxInput" type="number" step="0.01" placeholder="예: 16">
           </div>
-        </section>
+          <div class="item">
+            <label>VW</label>
+            <div class="out" id="vwOutput">-</div>
+          </div>
+        </div>
+        <div class="btns">
+          <button id="btnPxToVw">변환</button>
+          <button class="secondary" id="btnCopyVw">VW 복사</button>
+          <button class="secondary" id="btnClear1">초기화</button>
+        </div>
+        <div class="hint">공식: <code class="k">VW = (PX ÷ 뷰포트너비) × 100</code></div>
+      </div>
 
-        <div class="styles_grid__XfS2R">
-          <section class="styles_card__Mf8Ci">
-            <header class="styles_sectionHeader__Enz7Y">
-              <h2 class="styles_sectionTitle__7CEjs">PX → VW 변환</h2>
-              <p class="styles_sectionDesc__9FgFy">픽셀 값을 뷰포트 너비 단위로 변환합니다.</p>
-            </header>
-            <div class="styles_twoColGrid__R42Ct">
-              <div class="styles_formGroup__GtFTa">
-                <label for="px-input-left" class="styles_label__MTf2s">PX</label>
-                <input
-                  id="px-input-left"
-                  type="number"
-                  class="styles_input__iZ_6r"
-                  placeholder="픽셀 값 입력"
-                />
-              </div>
-              <div class="styles_formGroup__GtFTa">
-                <label for="vw-output-left" class="styles_label__MTf2s">VW</label>
-                <input
-                  id="vw-output-left"
-                  type="text"
-                  readonly
-                  class="styles_input__iZ_6r styles_resultReadOnly__7HCH4"
-                  placeholder="변환 결과"
-                />
-              </div>
-            </div>
-          </section>
+      <div class="card">
+        <h2>VW → PX 변환</h2>
+        <div class="kv">
+          <div class="item">
+            <label for="vwInput">VW</label>
+            <input id="vwInput" type="number" step="0.01" placeholder="예: 4.27">
+          </div>
+          <div class="item">
+            <label>PX</label>
+            <div class="out" id="pxOutput">-</div>
+          </div>
+        </div>
+        <div class="btns">
+          <button id="btnVwToPx">변환</button>
+          <button class="secondary" id="btnCopyPx">PX 복사</button>
+          <button class="secondary" id="btnClear2">초기화</button>
+        </div>
+        <div class="hint">공식: <code class="k">PX = (VW ÷ 100) × 뷰포트너비</code></div>
+      </div>
+    </div>
 
-          <section class="styles_card__Mf8Ci">
-            <header class="styles_sectionHeader__Enz7Y">
-              <h2 class="styles_sectionTitle__7CEjs">VW → PX 변환</h2>
-              <p class="styles_sectionDesc__9FgFy">뷰포트 너비 단위를 픽셀 값으로 변환합니다.</p>
-            </header>
-            <div class="styles_controlGrid__8ofpU">
-              <div class="styles_formGroup__GtFTa">
-                <label for="viewport-width-right" class="styles_label__MTf2s">뷰포트 너비 (px)</label>
-                <input
-                  id="viewport-width-right"
-                  type="number"
-                  readonly
-                  class="styles_input__iZ_6r styles_resultReadOnly__7HCH4"
-                  placeholder="1440"
-                  value="1440"
-                />
-              </div>
-            </div>
-            <div class="styles_twoColGrid__R42Ct">
-              <div class="styles_formGroup__GtFTa">
-                <label for="vw-input-right" class="styles_label__MTf2s">VW</label>
-                <input
-                  id="vw-input-right"
-                  type="number"
-                  class="styles_input__iZ_6r"
-                  placeholder="뷰포트 너비 값 입력"
-                />
-              </div>
-              <div class="styles_formGroup__GtFTa">
-                <label for="px-output-right" class="styles_label__MTf2s">PX</label>
-                <input
-                  id="px-output-right"
-                  type="text"
-                  readonly
-                  class="styles_input__iZ_6r styles_resultReadOnly__7HCH4"
-                  placeholder="변환 결과"
-                />
-              </div>
-            </div>
-          </section>
+    <div class="card" style="margin-top:14px;">
+      <h2>CSS 소스 변환</h2>
+
+      <div class="check">
+        <input id="onlyPxProps" type="checkbox" checked>
+        <label for="onlyPxProps" style="margin:0;">불필요한 속성 제거 (px가 포함된 선언만 유지)</label>
+      </div>
+
+      <div class="grid">
+        <div class="card" style="box-shadow:none; border-style:dashed;">
+          <h2 style="font-size:16px;">CSS 소스 입력</h2>
+          <textarea id="cssInput" placeholder="예) margin-top:16px;text-align:center;
+예) .box{margin-top:16px;text-align:center;padding:0 20px;}
+예) 여러 줄도 OK"></textarea>
+          <div class="btns">
+            <button id="btnConvertCss">PX → VW 변환</button>
+            <button class="secondary" id="btnClearCss">초기화</button>
+          </div>
+          <div class="hint">
+            체크 ON이면 <code class="k">px</code>가 들어있는 속성만 남기고 나머지는 삭제합니다.<br>
+            예) <code class="k">margin-top:16px;text-align:center;</code> → <code class="k">margin-top:16px;</code>
+          </div>
         </div>
 
-        <section class="styles_card__Mf8Ci">
-          <header class="styles_sectionHeader__Enz7Y">
-            <h2 class="styles_sectionTitle__7CEjs">CSS 소스 변환</h2>
-            <p class="styles_sectionDesc__9FgFy">CSS 코드의 PX 값을 VW로 일괄 변환합니다.</p>
-          </header>
-          <div class="styles_formGroup__GtFTa">
-            <label for="css-input" class="styles_label__MTf2s">CSS 소스 입력</label>
-            <textarea
-              id="css-input"
-              class="styles_textarea__PM3iQ"
-              placeholder="CSS 소스를 입력하세요. 예: width: 320px; height: 240px;"
-            ></textarea>
+        <div class="card" style="box-shadow:none; border-style:dashed;">
+          <h2 style="font-size:16px;">변환된 CSS</h2>
+          <textarea id="cssOutput" readonly placeholder="여기에 결과가 출력됩니다."></textarea>
+          <div class="btns">
+            <button class="secondary" id="btnCopyCss">결과 복사</button>
           </div>
-          <div class="styles_checkboxRow__qwGSo">
-            <input id="remove-props" type="checkbox" />
-            <label for="remove-props" class="styles_helper__GrPBe">불필요한 속성 제거</label>
+          <div class="hint">
+            변환 규칙: CSS 텍스트 안의 <code class="k">숫자px</code>를 찾아 <code class="k">vw</code>로 변환합니다.
           </div>
-          <div class="styles_formGroup__GtFTa">
-            <label for="css-output" class="styles_label__MTf2s">변환된 CSS</label>
-            <textarea
-              id="css-output"
-              readonly
-              class="styles_textarea__PM3iQ styles_resultReadOnly__7HCH4"
-              placeholder="변환된 CSS가 여기에 표시됩니다."
-            ></textarea>
-          </div>
-        </section>
-
-        <section class="styles_guide__3p_Uv">
-          <div class="styles_tipCard__RN0mC">
-            <h2 class="styles_sectionTitle__7CEjs">사용법 및 팁</h2>
-            <div class="styles_grid__XfS2R">
-              <div>
-                <h3 class="styles_sectionDesc__9FgFy">PX → VW 변환</h3>
-                <ul class="styles_list__LNUbF">
-                  <li>PX 값을 입력하면 자동으로 VW로 변환됩니다</li>
-                  <li>뷰포트 너비를 기준으로 계산됩니다</li>
-                  <li>소수점 자릿수를 조정할 수 있습니다</li>
-                </ul>
-              </div>
-              <div>
-                <h3 class="styles_sectionDesc__9FgFy">VW → PX 변환</h3>
-                <ul class="styles_list__LNUbF">
-                  <li>VW 값을 입력하면 자동으로 PX로 변환됩니다</li>
-                  <li>지정된 뷰포트 너비를 기준으로 계산됩니다</li>
-                  <li>반응형 디자인에 유용합니다</li>
-                </ul>
-              </div>
-            </div>
-            <div class="styles_formula__ECK5R">
-              <p><b>PX → VW:</b> VW = (PX ÷ 뷰포트너비) × 100</p>
-              <p><b>VW → PX:</b> PX = (VW ÷ 100) × 뷰포트너비</p>
-            </div>
-          </div>
-        </section>
+        </div>
       </div>
-    </main>
+    </div>
 
-    <script id="ld-json-vw-converter" type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "VW 계산기 · VW 변환기 | PX↔VW 변환 도구",
-        "alternateName": ["VW 계산기", "VW 변환기", "PX↔VW 변환기"],
-        "applicationCategory": "DeveloperApplication",
-        "operatingSystem": "Web",
-        "inLanguage": "ko",
-        "url": "/px-vw-converter",
-        "description": "VW 계산기 및 VW 변환기: PX를 VW로, VW를 PX로 쉽게 변환하는 무료 온라인 도구.",
-        "keywords": [
-          "vw 계산기",
-          "vw 변환기",
-          "px vw 변환",
-          "px to vw",
-          "vw to px",
-          "픽셀 뷰포트 변환",
-          "CSS 단위 변환",
-          "반응형 디자인 계산기"
-        ],
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "KRW"
+    <footer>© PX↔VW Converter</footer>
+  </div>
+
+  <script>
+    function $(id) { return document.getElementById(id); }
+
+    function toNumber(v) {
+      var n = parseFloat(v);
+      if (isNaN(n)) return null;
+      return n;
+    }
+
+    function getViewportWidth() {
+      var vw = toNumber($("viewportWidth").value);
+      if (!vw || vw <= 0) return null;
+      return vw;
+    }
+
+    function getPrecision() {
+      var p = parseInt($("precision").value, 10);
+      if (isNaN(p) || p < 0) return 2;
+      return p;
+    }
+
+    function roundTo(n, p) {
+      var m = Math.pow(10, p);
+      return Math.round(n * m) / m;
+    }
+
+    function formatNum(n, p) {
+      var r = roundTo(n, p);
+      if (p === 0) return String(Math.round(r));
+      return r.toFixed(p);
+    }
+
+    function copyText(text) {
+      if (!text || text === "-") return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text);
+        return;
+      }
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+
+    // ====== 핵심: px 포함 선언만 남김 ======
+    function keepOnlyPxDeclarations(styleText) {
+      if (!styleText) return "";
+
+      var list = styleText.split(";");
+      var kept = [];
+      var i, decl, idx, prop, value;
+
+      for (i = 0; i < list.length; i++) {
+        decl = (list[i] || "").trim();
+        if (!decl) continue;
+
+        idx = decl.indexOf(":");
+        if (idx === -1) continue;
+
+        prop = decl.slice(0, idx).trim();
+        value = decl.slice(idx + 1).trim();
+
+        // 값에 px가 포함된 선언만 유지
+        // 예: 16px, -2.5px, 0px, 0 20px, calc(100% - 16px)
+        if (/\b-?\d*\.?\d+px\b/i.test(value)) {
+          kept.push(prop + ":" + value);
         }
       }
-    </script>
-    <script>
-      const viewportWidthInput = document.getElementById("viewport-width");
-      const decimalPlacesInput = document.getElementById("decimal-places");
-      const pxInputLeft = document.getElementById("px-input-left");
-      const vwOutputLeft = document.getElementById("vw-output-left");
-      const viewportWidthRight = document.getElementById("viewport-width-right");
-      const vwInputRight = document.getElementById("vw-input-right");
-      const pxOutputRight = document.getElementById("px-output-right");
-      const cssInput = document.getElementById("css-input");
-      const cssOutput = document.getElementById("css-output");
-      const removeProps = document.getElementById("remove-props");
 
-      let viewportWidth = Number(viewportWidthInput.value);
-      let decimalPlaces = Number(decimalPlacesInput.value);
+      return kept.length ? (kept.join(";") + ";") : "";
+    }
 
-      const cssRemovePatterns = [/margin:\s*[^;]+;?/g, /padding:\s*[^;]+;?/g, /border:\s*[^;]+;?/g];
-
-      const toVw = (pxValue) => ((pxValue / viewportWidth) * 100).toFixed(decimalPlaces);
-      const toPx = (vwValue) => ((vwValue / 100) * viewportWidth).toFixed(4);
-
-      const updateViewportWidth = () => {
-        viewportWidth = Number(viewportWidthInput.value);
-        if (Number.isNaN(viewportWidth)) {
-          viewportWidth = 0;
-        }
-        viewportWidthInput.value = String(viewportWidth);
-        viewportWidthRight.value = String(viewportWidth);
-      };
-
-      const updateDecimalPlaces = () => {
-        decimalPlaces = Number(decimalPlacesInput.value);
-        if (Number.isNaN(decimalPlaces)) {
-          decimalPlaces = 0;
-        }
-        decimalPlacesInput.value = String(decimalPlaces);
-      };
-
-      const updatePxToVw = () => {
-        const rawValue = pxInputLeft.value;
-        if (rawValue && !Number.isNaN(Number(rawValue))) {
-          vwOutputLeft.value = toVw(Number(rawValue));
-          return;
-        }
-        vwOutputLeft.value = "";
-      };
-
-      const updateVwToPx = () => {
-        const rawValue = vwInputRight.value;
-        if (rawValue && !Number.isNaN(Number(rawValue))) {
-          pxOutputRight.value = toPx(Number(rawValue));
-          return;
-        }
-        pxOutputRight.value = "";
-      };
-
-      const updateCssOutput = () => {
-        const source = cssInput.value;
-        if (!source.trim()) {
-          cssOutput.value = "";
-          return;
-        }
-
-        let result = source.replace(/(\d+(?:\.\d+)?)px/g, (match, num) => {
-          const parsed = Number(num);
-          if (Number.isNaN(parsed)) {
-            return match;
-          }
-          return `${toVw(parsed)}vw`;
-        });
-
-        if (removeProps.checked) {
-          cssRemovePatterns.forEach((pattern) => {
-            result = result.replace(pattern, "");
-          });
-        }
-
-        cssOutput.value = result;
-      };
-
-      const updateAll = () => {
-        updatePxToVw();
-        updateVwToPx();
-        updateCssOutput();
-      };
-
-      viewportWidthInput.addEventListener("input", () => {
-        updateViewportWidth();
-        updateAll();
+    // selector { ... } 형태의 블록 내부도 정리
+    function keepOnlyPxInCssBlocks(cssText) {
+      if (!cssText) return "";
+      return cssText.replace(/\{[^}]*\}/g, function (block) {
+        var inner = block.slice(1, -1);
+        var cleaned = keepOnlyPxDeclarations(inner);
+        return "{" + cleaned + "}";
       });
+    }
 
-      decimalPlacesInput.addEventListener("input", () => {
-        updateDecimalPlaces();
-        updateAll();
+    // px -> vw 변환
+    function convertPxToVwInText(text, viewportWidth, precision) {
+      if (!text) return "";
+
+      // 0px도 변환 대상(원하면 제외 가능)
+      return text.replace(/(-?\d*\.?\d+)px\b/g, function (all, num) {
+        var px = parseFloat(num);
+        if (isNaN(px)) return all;
+
+        var vw = (px / viewportWidth) * 100;
+        var s = formatNum(vw, precision);
+
+        // -0.00vw 같은 이상치 방지
+        if (s.indexOf("-0") === 0) s = s.replace("-0", "0");
+
+        return s + "vw";
       });
+    }
 
-      pxInputLeft.addEventListener("input", updatePxToVw);
-      vwInputRight.addEventListener("input", updateVwToPx);
-      cssInput.addEventListener("input", updateCssOutput);
-      removeProps.addEventListener("change", updateCssOutput);
+    // ====== 단일 변환 UI ======
+    function onPxToVw() {
+      var vw = getViewportWidth();
+      if (!vw) { $("vwOutput").textContent = "-"; return; }
 
-      updateViewportWidth();
-      updateDecimalPlaces();
-      updateAll();
-    </script>
-  </body>
+      var p = getPrecision();
+      var px = toNumber($("pxInput").value);
+      if (px === null) { $("vwOutput").textContent = "-"; return; }
+
+      var out = formatNum((px / vw) * 100, p) + "vw";
+      if (out.indexOf("-0") === 0) out = out.replace("-0", "0");
+      $("vwOutput").textContent = out;
+    }
+
+    function onVwToPx() {
+      var vw = getViewportWidth();
+      if (!vw) { $("pxOutput").textContent = "-"; return; }
+
+      var p = getPrecision();
+      var val = toNumber($("vwInput").value);
+      if (val === null) { $("pxOutput").textContent = "-"; return; }
+
+      var out = formatNum((val / 100) * vw, p) + "px";
+      if (out.indexOf("-0") === 0) out = out.replace("-0", "0");
+      $("pxOutput").textContent = out;
+    }
+
+    // ====== CSS 변환 UI ======
+    function onConvertCss() {
+      var vw = getViewportWidth();
+      if (!vw) { $("cssOutput").value = ""; return; }
+
+      var p = getPrecision();
+      var src = $("cssInput").value || "";
+      var onlyPx = $("onlyPxProps").checked;
+
+      var cleaned = src;
+
+      // 블록이 있으면 블록단위 정리, 없으면 선언리스트 정리
+      if (onlyPx) {
+        if (cleaned.indexOf("{") !== -1 && cleaned.indexOf("}") !== -1) {
+          cleaned = keepOnlyPxInCssBlocks(cleaned);
+        } else {
+          cleaned = keepOnlyPxDeclarations(cleaned);
+        }
+      }
+
+      var out = convertPxToVwInText(cleaned, vw, p);
+      $("cssOutput").value = out;
+    }
+
+    function bind() {
+      $("btnPxToVw").addEventListener("click", onPxToVw);
+      $("btnVwToPx").addEventListener("click", onVwToPx);
+      $("btnConvertCss").addEventListener("click", onConvertCss);
+
+      $("btnCopyVw").addEventListener("click", function () { copyText($("vwOutput").textContent); });
+      $("btnCopyPx").addEventListener("click", function () { copyText($("pxOutput").textContent); });
+      $("btnCopyCss").addEventListener("click", function () { copyText($("cssOutput").value); });
+
+      $("btnClear1").addEventListener("click", function () { $("pxInput").value = ""; $("vwOutput").textContent = "-"; });
+      $("btnClear2").addEventListener("click", function () { $("vwInput").value = ""; $("pxOutput").textContent = "-"; });
+      $("btnClearCss").addEventListener("click", function () { $("cssInput").value = ""; $("cssOutput").value = ""; });
+
+      // 입력할 때도 빠르게 반영(선택)
+      $("pxInput").addEventListener("input", onPxToVw);
+      $("vwInput").addEventListener("input", onVwToPx);
+    }
+
+    bind();
+  </script>
+</body>
 </html>
