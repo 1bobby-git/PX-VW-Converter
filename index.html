@@ -7,14 +7,24 @@
   <style>
     :root { color-scheme: light; }
     body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; background:#f6f7fb; color:#111; }
-    .wrap { max-width: 980px; margin: 0 auto; padding: 24px 16px 48px; }
+
+    /* 전체 폭 확장 */
+    .wrap { max-width: none; width: 100%; margin: 0; padding: 24px 24px 48px; }
+
     h1 { margin: 6px 0 10px; font-size: 28px; }
     p.lead { margin: 0 0 18px; color:#333; line-height:1.6; }
+
     .grid { display: grid; gap: 14px; grid-template-columns: 1fr; }
     @media (min-width: 860px){ .grid { grid-template-columns: 1fr 1fr; } }
+
+    /* CSS 변환 영역은 더 넓게 */
+    .cssGrid { display:grid; gap:14px; grid-template-columns: 1fr; }
+    @media (min-width: 980px){ .cssGrid { grid-template-columns: 1fr 1fr; } }
+
     .card { background:#fff; border: 1px solid #e6e8ef; border-radius: 14px; box-shadow: 0 6px 22px rgba(12, 19, 40, 0.06); padding: 16px; }
     .card h2 { margin: 0 0 10px; font-size: 18px; }
     .row { display:flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+
     label { display:block; font-size: 12px; color:#444; margin: 0 0 6px; }
     input[type="number"], textarea, select {
       width: 100%;
@@ -26,9 +36,18 @@
       outline: none;
       background:#fff;
     }
-    textarea { min-height: 160px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; line-height:1.5; }
+
+    /* textarea 높이 확장 */
+    textarea {
+      min-height: 320px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      line-height:1.5;
+    }
+
     input[type="number"]:focus, textarea:focus, select:focus { border-color:#6b7cff; box-shadow: 0 0 0 3px rgba(107,124,255,0.18); }
     .col { flex: 1 1 220px; }
+
     .btns { display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px; }
     button {
       border: 1px solid #d7dbe7;
@@ -41,9 +60,12 @@
     }
     button.secondary { background:#fff; color:#111; }
     button:active { transform: translateY(1px); }
+
     .hint { margin-top:8px; font-size: 12px; color:#666; line-height:1.5; }
+
     .kv { display:flex; gap: 12px; flex-wrap: wrap; }
     .kv .item { flex: 1 1 220px; }
+
     .out {
       font-weight: 700;
       font-size: 18px;
@@ -53,13 +75,20 @@
       border: 1px solid #dbe0ff;
       word-break: break-all;
     }
+
     .check {
       display:flex; gap:8px; align-items:center; margin: 6px 0 10px;
       font-size: 13px; color:#222;
     }
     .check input { width: 16px; height: 16px; }
+
     footer { margin-top: 18px; color:#777; font-size: 12px; text-align:center; }
     code.k { background:#f0f2f7; padding: 2px 6px; border-radius: 6px; }
+
+    /* 큰 화면에서 CSS 변환 카드 내부도 시원하게 */
+    @media (min-width: 1200px){
+      textarea { min-height: 420px; }
+    }
   </style>
 </head>
 <body>
@@ -72,7 +101,7 @@
         <div class="col">
           <label for="viewportWidth">뷰포트 너비 (px)</label>
           <input id="viewportWidth" type="number" min="1" step="1" value="375">
-          <div class="hint">계산 기준이 되는 화면 너비입니다. 예: 360 / 375 / 414 / 768 / 1024</div>
+          <div class="hint">계산 기준이 되는 화면 너비입니다. 예: <code class="k">360</code> / <code class="k">375</code> / <code class="k">414</code> / <code class="k">768</code> / <code class="k">1024</code></div>
         </div>
         <div class="col">
           <label for="precision">소수점 자릿수</label>
@@ -135,14 +164,15 @@
 
       <div class="check">
         <input id="onlyPxProps" type="checkbox" checked>
-        <label for="onlyPxProps" style="margin:0;">불필요한 속성 제거 (px가 포함된 선언만 유지)</label>
+        <label for="onlyPxProps" style="margin:0;">불필요한 속성 제거 (px가 포함된 선언만 유지) + 비어있는 블록 삭제</label>
       </div>
 
-      <div class="grid">
+      <div class="cssGrid">
         <div class="card" style="box-shadow:none; border-style:dashed;">
           <h2 style="font-size:16px;">CSS 소스 입력</h2>
           <textarea id="cssInput" placeholder="예) margin-top:16px;text-align:center;
 예) .box{margin-top:16px;text-align:center;padding:0 20px;}
+예) .a{text-align:center;}  (→ 비어있어져서 삭제됨)
 예) 여러 줄도 OK"></textarea>
           <div class="btns">
             <button id="btnConvertCss">PX → VW 변환</button>
@@ -150,6 +180,7 @@
           </div>
           <div class="hint">
             체크 ON이면 <code class="k">px</code>가 들어있는 속성만 남기고 나머지는 삭제합니다.<br>
+            속성 제거 후 <code class="k">{}</code> 처럼 비어버린 규칙은 통째로 삭제합니다.<br>
             예) <code class="k">margin-top:16px;text-align:center;</code> → <code class="k">margin-top:16px;</code>
           </div>
         </div>
@@ -216,7 +247,7 @@
       document.body.removeChild(ta);
     }
 
-    // ====== 핵심: px 포함 선언만 남김 ======
+    /* px 포함 선언만 유지 */
     function keepOnlyPxDeclarations(styleText) {
       if (!styleText) return "";
 
@@ -234,8 +265,8 @@
         prop = decl.slice(0, idx).trim();
         value = decl.slice(idx + 1).trim();
 
-        // 값에 px가 포함된 선언만 유지
-        // 예: 16px, -2.5px, 0px, 0 20px, calc(100% - 16px)
+        /* 값에 px가 포함된 선언만 유지
+           예: 16px, -2.5px, 0px, 0 20px, calc(100% - 16px) */
         if (/\b-?\d*\.?\d+px\b/i.test(value)) {
           kept.push(prop + ":" + value);
         }
@@ -244,21 +275,39 @@
       return kept.length ? (kept.join(";") + ";") : "";
     }
 
-    // selector { ... } 형태의 블록 내부도 정리
+    /* {}가 비어있는 규칙 삭제 */
+    function removeEmptyCssBlocks(cssText) {
+      if (!cssText) return "";
+
+      /* selector{} / @media{} 등 내용이 비어있는 블록 제거
+         단순 규칙 기반이지만 일반적인 변환기 입력 범위에서는 충분히 안정적 */
+      var out = cssText.replace(/[^{}]+\{\s*\}/g, "");
+
+      /* 잔여 공백/빈 줄 정리 */
+      out = out.replace(/[ \t]+\n/g, "\n");
+      out = out.replace(/\n{3,}/g, "\n\n");
+
+      return out.trim();
+    }
+
+    /* selector { ... } 블록 내부 정리 + 빈 블록 제거 */
     function keepOnlyPxInCssBlocks(cssText) {
       if (!cssText) return "";
-      return cssText.replace(/\{[^}]*\}/g, function (block) {
+
+      var out = cssText.replace(/\{[^}]*\}/g, function (block) {
         var inner = block.slice(1, -1);
         var cleaned = keepOnlyPxDeclarations(inner);
         return "{" + cleaned + "}";
       });
+
+      out = removeEmptyCssBlocks(out);
+      return out;
     }
 
-    // px -> vw 변환
+    /* px -> vw 변환 */
     function convertPxToVwInText(text, viewportWidth, precision) {
       if (!text) return "";
 
-      // 0px도 변환 대상(원하면 제외 가능)
       return text.replace(/(-?\d*\.?\d+)px\b/g, function (all, num) {
         var px = parseFloat(num);
         if (isNaN(px)) return all;
@@ -266,14 +315,11 @@
         var vw = (px / viewportWidth) * 100;
         var s = formatNum(vw, precision);
 
-        // -0.00vw 같은 이상치 방지
         if (s.indexOf("-0") === 0) s = s.replace("-0", "0");
-
         return s + "vw";
       });
     }
 
-    // ====== 단일 변환 UI ======
     function onPxToVw() {
       var vw = getViewportWidth();
       if (!vw) { $("vwOutput").textContent = "-"; return; }
@@ -300,7 +346,6 @@
       $("pxOutput").textContent = out;
     }
 
-    // ====== CSS 변환 UI ======
     function onConvertCss() {
       var vw = getViewportWidth();
       if (!vw) { $("cssOutput").value = ""; return; }
@@ -311,12 +356,12 @@
 
       var cleaned = src;
 
-      // 블록이 있으면 블록단위 정리, 없으면 선언리스트 정리
       if (onlyPx) {
         if (cleaned.indexOf("{") !== -1 && cleaned.indexOf("}") !== -1) {
           cleaned = keepOnlyPxInCssBlocks(cleaned);
         } else {
           cleaned = keepOnlyPxDeclarations(cleaned);
+          /* 선언 리스트 모드에서는 {} 개념이 없으니 별도 삭제 없음 */
         }
       }
 
@@ -337,7 +382,6 @@
       $("btnClear2").addEventListener("click", function () { $("vwInput").value = ""; $("pxOutput").textContent = "-"; });
       $("btnClearCss").addEventListener("click", function () { $("cssInput").value = ""; $("cssOutput").value = ""; });
 
-      // 입력할 때도 빠르게 반영(선택)
       $("pxInput").addEventListener("input", onPxToVw);
       $("vwInput").addEventListener("input", onVwToPx);
     }
