@@ -1,0 +1,607 @@
+﻿<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VW 계산기 · VW 변환기 | PX↔VW 변환 도구</title>
+    <meta
+      name="description"
+      content="VW 계산기 및 VW 변환기: PX를 VW로, VW를 PX로 쉽게 변환하는 무료 온라인 도구. 웹 개발자와 디자이너를 위한 정확한 CSS 단위 계산기."
+    />
+    <meta
+      name="keywords"
+      content="vw 계산기,vw 변환기,px vw 변환,px to vw,vw to px,픽셀 뷰포트 변환,CSS 단위 변환,반응형 디자인 계산기"
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://benjiepark.com/px-vw-converter" />
+    <meta name="naver-site-verification" content="c9506fad12e128b01f9bdbdc31f38267ca35b08d" />
+    <meta property="og:title" content="VW 계산기 · VW 변환기 | PX↔VW 변환 도구" />
+    <meta
+      property="og:description"
+      content="VW 계산기 및 VW 변환기: PX를 VW로, VW를 PX로 쉽게 변환하는 무료 온라인 도구."
+    />
+    <meta property="og:url" content="https://benjiepark.com/px-vw-converter" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="홈" />
+    <meta name="twitter:description" content="만다라트표, 부의금 정산, 블로그, 버킷 리스트" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" sizes="1024x1024" />
+    <style>
+      @font-face {
+        font-family: "Geist";
+        font-style: normal;
+        font-weight: 100 900;
+        font-display: swap;
+        src: url("https://benjiepark.com/_next/static/media/ba015fad6dcf6784-s.woff2") format("woff2");
+        unicode-range: u+0100-02ba, u+02bd-02c5, u+02c7-02cc, u+02ce-02d7, u+02dd-02ff, u+0304,
+          u+0308, u+0329, u+1d00-1dbf, u+1e00-1e9f, u+1ef2-1eff, u+2020, u+20a0-20ab, u+20ad-20c0,
+          u+2113, u+2c60-2c7f, u+a720-a7ff;
+      }
+
+      @font-face {
+        font-family: "Geist";
+        font-style: normal;
+        font-weight: 100 900;
+        font-display: swap;
+        src: url("https://benjiepark.com/_next/static/media/4cf2300e9c8272f7-s.p.woff2") format("woff2");
+        unicode-range: u+00??, u+0131, u+0152-0153, u+02bb-02bc, u+02c6, u+02da, u+02dc, u+0304,
+          u+0308, u+0329, u+2000-206f, u+20ac, u+2122, u+2191, u+2193, u+2212, u+2215, u+feff, u+fffd;
+      }
+
+      @font-face {
+        font-family: "Geist Mono";
+        font-style: normal;
+        font-weight: 100 900;
+        font-display: swap;
+        src: url("https://benjiepark.com/_next/static/media/747892c23ea88013-s.woff2") format("woff2");
+        unicode-range: u+0100-02ba, u+02bd-02c5, u+02c7-02cc, u+02ce-02d7, u+02dd-02ff, u+0304,
+          u+0308, u+0329, u+1d00-1dbf, u+1e00-1e9f, u+1ef2-1eff, u+2020, u+20a0-20ab, u+20ad-20c0,
+          u+2113, u+2c60-2c7f, u+a720-a7ff;
+      }
+
+      @font-face {
+        font-family: "Geist Mono";
+        font-style: normal;
+        font-weight: 100 900;
+        font-display: swap;
+        src: url("https://benjiepark.com/_next/static/media/93f479601ee12b01-s.p.woff2") format("woff2");
+        unicode-range: u+00??, u+0131, u+0152-0153, u+02bb-02bc, u+02c6, u+02da, u+02dc, u+0304,
+          u+0308, u+0329, u+2000-206f, u+20ac, u+2122, u+2191, u+2193, u+2212, u+2215, u+feff, u+fffd;
+      }
+
+      :root {
+        --background: #ffffff;
+        --foreground: #171717;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --background: #0a0a0a;
+          --foreground: #ededed;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+        padding: 0;
+        margin: 0;
+      }
+
+      html,
+      body {
+        max-width: 100vw;
+        overflow-x: hidden;
+      }
+
+      body {
+        color: var(--foreground);
+        background: var(--background);
+        font-family: "Geist", "Geist Fallback", Arial, Helvetica, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .styles_page__IJJEJ {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f7fafc, #f1f5f9);
+        padding: 16px;
+      }
+
+      .styles_container__8fUl7 {
+        max-width: 1120px;
+        margin: 0 auto;
+      }
+
+      .styles_header__bXavH {
+        text-align: center;
+        margin-bottom: 16px;
+      }
+
+      .styles_title__vhJtB {
+        color: #0f172a;
+        font-size: 32px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .styles_subtitle__bqI7M {
+        margin-top: 8px;
+        color: #475569;
+        font-size: 16px;
+      }
+
+      .styles_stickyControls__LNq_t {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        margin-bottom: 16px;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: saturate(120%) blur(6px);
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 8px 20px rgba(2, 6, 23, 0.06);
+      }
+
+      .styles_controlGrid__8ofpU {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .styles_formGroup__GtFTa {
+        display: flex;
+        flex-direction: column;
+      }
+
+      @media (min-width: 640px) {
+        .styles_controlGrid__8ofpU {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      .styles_label__MTf2s {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 6px;
+      }
+
+      .styles_input__iZ_6r {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        background: #fff;
+        color: #0f172a;
+        outline: none;
+        transition: box-shadow 0.15s ease, border-color 0.15s ease;
+      }
+
+      .styles_input__iZ_6r:focus {
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+      }
+
+      .styles_helper__GrPBe {
+        margin-top: 6px;
+        color: #64748b;
+        font-size: 12px;
+      }
+
+      .styles_grid__XfS2R {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      @media (min-width: 1024px) {
+        .styles_grid__XfS2R {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      .styles_card__Mf8Ci {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: 0 6px 18px rgba(2, 6, 23, 0.06);
+      }
+
+      .styles_sectionHeader__Enz7Y {
+        margin-bottom: 14px;
+      }
+
+      .styles_sectionTitle__7CEjs {
+        color: #0f172a;
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+
+      .styles_sectionDesc__9FgFy {
+        color: #64748b;
+        font-size: 14px;
+      }
+
+      .styles_twoColGrid__R42Ct {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-top: 12px;
+      }
+
+      .styles_textarea__PM3iQ {
+        width: 100%;
+        height: 140px;
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        resize: none;
+        outline: none;
+        background: #fff;
+        color: #0f172a;
+        transition: box-shadow 0.15s ease, border-color 0.15s ease;
+      }
+
+      .styles_textarea__PM3iQ:focus {
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+      }
+
+      .styles_checkboxRow__qwGSo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 12px 0;
+      }
+
+      .styles_checkboxRow__qwGSo input[type="checkbox"] {
+        accent-color: #10b981;
+      }
+
+      .styles_resultReadOnly__7HCH4 {
+        background: #f8fafc;
+        color: #475569;
+      }
+
+      .styles_guide__3p_Uv {
+        margin-top: 24px;
+      }
+
+      .styles_tipCard__RN0mC {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: 0 6px 18px rgba(2, 6, 23, 0.06);
+      }
+
+      .styles_list__LNUbF {
+        margin: 8px 0 0 18px;
+        color: #475569;
+      }
+
+      .styles_formula__ECK5R {
+        margin-top: 12px;
+        padding: 12px;
+        border-radius: 10px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #334155;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="styles_page__IJJEJ">
+      <div class="styles_container__8fUl7">
+        <header class="styles_header__bXavH">
+          <h1 class="styles_title__vhJtB">VW 계산기 · VW 변환기 (PX ↔ VW)</h1>
+          <p class="styles_subtitle__bqI7M">
+            VW 계산기와 VW 변환기로 픽셀(PX)과 뷰포트 너비(VW) 단위를 쉽고 정확하게
+            변환하세요.
+          </p>
+        </header>
+
+        <section class="styles_stickyControls__LNq_t">
+          <div class="styles_controlGrid__8ofpU">
+            <div class="styles_formGroup__GtFTa">
+              <label for="viewport-width" class="styles_label__MTf2s">뷰포트 너비 (px)</label>
+              <input
+                id="viewport-width"
+                type="number"
+                inputmode="numeric"
+                class="styles_input__iZ_6r"
+                placeholder="1440"
+                aria-describedby="viewport-desc"
+                value="1440"
+              />
+              <p id="viewport-desc" class="styles_helper__GrPBe">계산 기준이 되는 화면 너비입니다.</p>
+            </div>
+            <div class="styles_formGroup__GtFTa">
+              <label for="decimal-places" class="styles_label__MTf2s">소수점 자릿수</label>
+              <input
+                id="decimal-places"
+                type="number"
+                min="0"
+                max="10"
+                class="styles_input__iZ_6r"
+                value="4"
+              />
+              <p class="styles_helper__GrPBe">표시할 소수점 자릿수를 선택하세요.</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="styles_grid__XfS2R">
+          <section class="styles_card__Mf8Ci">
+            <header class="styles_sectionHeader__Enz7Y">
+              <h2 class="styles_sectionTitle__7CEjs">PX → VW 변환</h2>
+              <p class="styles_sectionDesc__9FgFy">픽셀 값을 뷰포트 너비 단위로 변환합니다.</p>
+            </header>
+            <div class="styles_twoColGrid__R42Ct">
+              <div class="styles_formGroup__GtFTa">
+                <label for="px-input-left" class="styles_label__MTf2s">PX</label>
+                <input
+                  id="px-input-left"
+                  type="number"
+                  class="styles_input__iZ_6r"
+                  placeholder="픽셀 값 입력"
+                />
+              </div>
+              <div class="styles_formGroup__GtFTa">
+                <label for="vw-output-left" class="styles_label__MTf2s">VW</label>
+                <input
+                  id="vw-output-left"
+                  type="text"
+                  readonly
+                  class="styles_input__iZ_6r styles_resultReadOnly__7HCH4"
+                  placeholder="변환 결과"
+                />
+              </div>
+            </div>
+          </section>
+
+          <section class="styles_card__Mf8Ci">
+            <header class="styles_sectionHeader__Enz7Y">
+              <h2 class="styles_sectionTitle__7CEjs">VW → PX 변환</h2>
+              <p class="styles_sectionDesc__9FgFy">뷰포트 너비 단위를 픽셀 값으로 변환합니다.</p>
+            </header>
+            <div class="styles_controlGrid__8ofpU">
+              <div class="styles_formGroup__GtFTa">
+                <label for="viewport-width-right" class="styles_label__MTf2s">뷰포트 너비 (px)</label>
+                <input
+                  id="viewport-width-right"
+                  type="number"
+                  readonly
+                  class="styles_input__iZ_6r styles_resultReadOnly__7HCH4"
+                  placeholder="1440"
+                  value="1440"
+                />
+              </div>
+            </div>
+            <div class="styles_twoColGrid__R42Ct">
+              <div class="styles_formGroup__GtFTa">
+                <label for="vw-input-right" class="styles_label__MTf2s">VW</label>
+                <input
+                  id="vw-input-right"
+                  type="number"
+                  class="styles_input__iZ_6r"
+                  placeholder="뷰포트 너비 값 입력"
+                />
+              </div>
+              <div class="styles_formGroup__GtFTa">
+                <label for="px-output-right" class="styles_label__MTf2s">PX</label>
+                <input
+                  id="px-output-right"
+                  type="text"
+                  readonly
+                  class="styles_input__iZ_6r styles_resultReadOnly__7HCH4"
+                  placeholder="변환 결과"
+                />
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section class="styles_card__Mf8Ci">
+          <header class="styles_sectionHeader__Enz7Y">
+            <h2 class="styles_sectionTitle__7CEjs">CSS 소스 변환</h2>
+            <p class="styles_sectionDesc__9FgFy">CSS 코드의 PX 값을 VW로 일괄 변환합니다.</p>
+          </header>
+          <div class="styles_formGroup__GtFTa">
+            <label for="css-input" class="styles_label__MTf2s">CSS 소스 입력</label>
+            <textarea
+              id="css-input"
+              class="styles_textarea__PM3iQ"
+              placeholder="CSS 소스를 입력하세요. 예: width: 320px; height: 240px;"
+            ></textarea>
+          </div>
+          <div class="styles_checkboxRow__qwGSo">
+            <input id="remove-props" type="checkbox" />
+            <label for="remove-props" class="styles_helper__GrPBe">불필요한 속성 제거</label>
+          </div>
+          <div class="styles_formGroup__GtFTa">
+            <label for="css-output" class="styles_label__MTf2s">변환된 CSS</label>
+            <textarea
+              id="css-output"
+              readonly
+              class="styles_textarea__PM3iQ styles_resultReadOnly__7HCH4"
+              placeholder="변환된 CSS가 여기에 표시됩니다."
+            ></textarea>
+          </div>
+        </section>
+
+        <section class="styles_guide__3p_Uv">
+          <div class="styles_tipCard__RN0mC">
+            <h2 class="styles_sectionTitle__7CEjs">사용법 및 팁</h2>
+            <div class="styles_grid__XfS2R">
+              <div>
+                <h3 class="styles_sectionDesc__9FgFy">PX → VW 변환</h3>
+                <ul class="styles_list__LNUbF">
+                  <li>PX 값을 입력하면 자동으로 VW로 변환됩니다</li>
+                  <li>뷰포트 너비를 기준으로 계산됩니다</li>
+                  <li>소수점 자릿수를 조정할 수 있습니다</li>
+                </ul>
+              </div>
+              <div>
+                <h3 class="styles_sectionDesc__9FgFy">VW → PX 변환</h3>
+                <ul class="styles_list__LNUbF">
+                  <li>VW 값을 입력하면 자동으로 PX로 변환됩니다</li>
+                  <li>지정된 뷰포트 너비를 기준으로 계산됩니다</li>
+                  <li>반응형 디자인에 유용합니다</li>
+                </ul>
+              </div>
+            </div>
+            <div class="styles_formula__ECK5R">
+              <p><b>PX → VW:</b> VW = (PX ÷ 뷰포트너비) × 100</p>
+              <p><b>VW → PX:</b> PX = (VW ÷ 100) × 뷰포트너비</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script id="ld-json-vw-converter" type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "VW 계산기 · VW 변환기 | PX↔VW 변환 도구",
+        "alternateName": ["VW 계산기", "VW 변환기", "PX↔VW 변환기"],
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web",
+        "inLanguage": "ko",
+        "url": "/px-vw-converter",
+        "description": "VW 계산기 및 VW 변환기: PX를 VW로, VW를 PX로 쉽게 변환하는 무료 온라인 도구.",
+        "keywords": [
+          "vw 계산기",
+          "vw 변환기",
+          "px vw 변환",
+          "px to vw",
+          "vw to px",
+          "픽셀 뷰포트 변환",
+          "CSS 단위 변환",
+          "반응형 디자인 계산기"
+        ],
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "KRW"
+        }
+      }
+    </script>
+    <script>
+      const viewportWidthInput = document.getElementById("viewport-width");
+      const decimalPlacesInput = document.getElementById("decimal-places");
+      const pxInputLeft = document.getElementById("px-input-left");
+      const vwOutputLeft = document.getElementById("vw-output-left");
+      const viewportWidthRight = document.getElementById("viewport-width-right");
+      const vwInputRight = document.getElementById("vw-input-right");
+      const pxOutputRight = document.getElementById("px-output-right");
+      const cssInput = document.getElementById("css-input");
+      const cssOutput = document.getElementById("css-output");
+      const removeProps = document.getElementById("remove-props");
+
+      let viewportWidth = Number(viewportWidthInput.value);
+      let decimalPlaces = Number(decimalPlacesInput.value);
+
+      const cssRemovePatterns = [/margin:\s*[^;]+;?/g, /padding:\s*[^;]+;?/g, /border:\s*[^;]+;?/g];
+
+      const toVw = (pxValue) => ((pxValue / viewportWidth) * 100).toFixed(decimalPlaces);
+      const toPx = (vwValue) => ((vwValue / 100) * viewportWidth).toFixed(4);
+
+      const updateViewportWidth = () => {
+        viewportWidth = Number(viewportWidthInput.value);
+        if (Number.isNaN(viewportWidth)) {
+          viewportWidth = 0;
+        }
+        viewportWidthInput.value = String(viewportWidth);
+        viewportWidthRight.value = String(viewportWidth);
+      };
+
+      const updateDecimalPlaces = () => {
+        decimalPlaces = Number(decimalPlacesInput.value);
+        if (Number.isNaN(decimalPlaces)) {
+          decimalPlaces = 0;
+        }
+        decimalPlacesInput.value = String(decimalPlaces);
+      };
+
+      const updatePxToVw = () => {
+        const rawValue = pxInputLeft.value;
+        if (rawValue && !Number.isNaN(Number(rawValue))) {
+          vwOutputLeft.value = toVw(Number(rawValue));
+          return;
+        }
+        vwOutputLeft.value = "";
+      };
+
+      const updateVwToPx = () => {
+        const rawValue = vwInputRight.value;
+        if (rawValue && !Number.isNaN(Number(rawValue))) {
+          pxOutputRight.value = toPx(Number(rawValue));
+          return;
+        }
+        pxOutputRight.value = "";
+      };
+
+      const updateCssOutput = () => {
+        const source = cssInput.value;
+        if (!source.trim()) {
+          cssOutput.value = "";
+          return;
+        }
+
+        let result = source.replace(/(\d+(?:\.\d+)?)px/g, (match, num) => {
+          const parsed = Number(num);
+          if (Number.isNaN(parsed)) {
+            return match;
+          }
+          return `${toVw(parsed)}vw`;
+        });
+
+        if (removeProps.checked) {
+          cssRemovePatterns.forEach((pattern) => {
+            result = result.replace(pattern, "");
+          });
+        }
+
+        cssOutput.value = result;
+      };
+
+      const updateAll = () => {
+        updatePxToVw();
+        updateVwToPx();
+        updateCssOutput();
+      };
+
+      viewportWidthInput.addEventListener("input", () => {
+        updateViewportWidth();
+        updateAll();
+      });
+
+      decimalPlacesInput.addEventListener("input", () => {
+        updateDecimalPlaces();
+        updateAll();
+      });
+
+      pxInputLeft.addEventListener("input", updatePxToVw);
+      vwInputRight.addEventListener("input", updateVwToPx);
+      cssInput.addEventListener("input", updateCssOutput);
+      removeProps.addEventListener("change", updateCssOutput);
+
+      updateViewportWidth();
+      updateDecimalPlaces();
+      updateAll();
+    </script>
+  </body>
+</html>
