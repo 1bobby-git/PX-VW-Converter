@@ -29,5 +29,5 @@ jobs:
           node --check converter-core.js
           node --check app-ui.js
 
-      - name: Run converter tests
-        run: node --test tests/converter-core.test.js
+      - name: Run converter and UI contract tests
+        run: node --test tests/*.test.js
