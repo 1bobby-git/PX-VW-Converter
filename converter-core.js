@@ -441,6 +441,8 @@
     return formatNumber(bytes / (1024 * 1024), 1) + " MB";
   }
 
+  var CLASS_ATTRIBUTE_TYPO_PATTERN = /\b(calas|calss|claas|clas|clss|classs|cass)\b/gi;
+
   var KNOWN_AT_RULES = {
     charset: true,
     import: true,
@@ -464,6 +466,86 @@
     viewport: true,
     "-ms-viewport": true
   };
+
+  function maskNonCodeRanges(text) {
+    var characters = text.split("");
+    var index = 0;
+
+    function maskRange(start, end) {
+      var cursor;
+      for (cursor = start; cursor < end; cursor += 1) {
+        if (characters[cursor] !== "\n" && characters[cursor] !== "\r") {
+          characters[cursor] = " ";
+        }
+      }
+    }
+
+    while (index < text.length) {
+      var character = text.charAt(index);
+
+      if (character === "/" && text.charAt(index + 1) === "*") {
+        var commentEnd = readComment(text, index);
+        maskRange(index, commentEnd);
+        index = commentEnd;
+        continue;
+      }
+
+      if (character === "\"" || character === "'") {
+        var stringEnd = readString(text, index);
+        maskRange(index, stringEnd);
+        index = stringEnd;
+        continue;
+      }
+
+      if (startsUrlFunction(text, index)) {
+        var urlEnd = readUrlFunction(text, index);
+        maskRange(index, urlEnd);
+        index = urlEnd;
+        continue;
+      }
+
+      index += 1;
+    }
+
+    return characters.join("");
+  }
+
+  function isInsideOpenRange(text, offset, openCharacter, closeCharacter) {
+    return text.lastIndexOf(openCharacter, offset) > text.lastIndexOf(closeCharacter, offset);
+  }
+
+  function validateClassAttributeTypos(text, collector) {
+    var masked = maskNonCodeRanges(text);
+    var match;
+
+    CLASS_ATTRIBUTE_TYPO_PATTERN.lastIndex = 0;
+
+    while ((match = CLASS_ATTRIBUTE_TYPO_PATTERN.exec(masked)) && collector.issues.length < collector.limit) {
+      var typo = match[1];
+      var cursor = match.index + typo.length;
+      while (/\s/.test(masked.charAt(cursor))) {
+        cursor += 1;
+      }
+
+      var nextCharacter = masked.charAt(cursor);
+      var insideAttributeSelector = isInsideOpenRange(masked, match.index, "[", "]");
+      var insideHtmlTag = isInsideOpenRange(masked, match.index, "<", ">");
+      var looksLikeAttribute = nextCharacter === "=" || ((insideAttributeSelector || insideHtmlTag) && (nextCharacter === "]" || nextCharacter === ">" || nextCharacter === "/"));
+
+      if (!looksLikeAttribute) {
+        continue;
+      }
+
+      collector.add(
+        "warning",
+        "class-attribute-typo",
+        "속성명 '" + typo + "'는 'class' 오타로 보입니다. HTML에서는 'class=\"...\"', CSS 클래스 선택자는 '.이름' 형식을 사용하세요.",
+        match.index,
+        typo.length,
+        "class"
+      );
+    }
+  }
 
   function buildLineStarts(text) {
     var starts = [0];
@@ -842,6 +924,7 @@
     }
 
     validateLexicalStructure(source, collector);
+    validateClassAttributeTypos(source, collector);
     validateContainerSyntax(source, hasTopLevelBlock(source) ? "stylesheet" : "rule", 0, collector, declarations);
 
     if (typeof settings.declarationValidator === "function") {
