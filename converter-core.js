@@ -331,7 +331,7 @@
     return prelude.replace(/^\s+|\s+$/g, "");
   }
 
-  function filterContainer(text, sourceUnit, context, depth) {
+  function filterContainer(text, sourceUnit, context) {
     var cursor = 0;
     var outputParts = [];
     var stats = {
@@ -397,7 +397,7 @@
       var prelude = cleanPrelude(text.slice(cursor, token.index));
       var body = text.slice(token.index + 1, closeIndex);
       var childContext = isGroupingAtRule(prelude, body) ? "stylesheet" : "rule";
-      var childResult = filterContainer(body, sourceUnit, childContext, depth + 1);
+      var childResult = filterContainer(body, sourceUnit, childContext);
 
       stats.totalDeclarations += childResult.stats.totalDeclarations;
       stats.keptDeclarations += childResult.stats.keptDeclarations;
@@ -421,12 +421,12 @@
 
   function filterMatchingDeclarations(text, sourceUnit) {
     var context = hasTopLevelBlock(text) ? "stylesheet" : "rule";
-    return filterContainer(text, sourceUnit, context, 0);
+    return filterContainer(text, sourceUnit, context);
   }
 
   function byteSize(text) {
-    if (window.TextEncoder) {
-      return new TextEncoder().encode(text).length;
+    if (global.TextEncoder) {
+      return new global.TextEncoder().encode(text).length;
     }
     return unescape(encodeURIComponent(text)).length;
   }
@@ -441,12 +441,474 @@
     return formatNumber(bytes / (1024 * 1024), 1) + " MB";
   }
 
+  var KNOWN_AT_RULES = {
+    charset: true,
+    import: true,
+    namespace: true,
+    layer: true,
+    media: true,
+    supports: true,
+    container: true,
+    scope: true,
+    document: true,
+    "starting-style": true,
+    keyframes: true,
+    "-webkit-keyframes": true,
+    "-moz-keyframes": true,
+    "font-face": true,
+    page: true,
+    property: true,
+    "counter-style": true,
+    "font-feature-values": true,
+    "font-palette-values": true,
+    viewport: true,
+    "-ms-viewport": true
+  };
+
+  function buildLineStarts(text) {
+    var starts = [0];
+    var index;
+
+    for (index = 0; index < text.length; index += 1) {
+      if (text.charAt(index) === "\n") {
+        starts.push(index + 1);
+      }
+    }
+
+    return starts;
+  }
+
+  function locateOffset(lineStarts, offset) {
+    var low = 0;
+    var high = lineStarts.length - 1;
+
+    while (low <= high) {
+      var middle = Math.floor((low + high) / 2);
+      if (lineStarts[middle] <= offset) {
+        low = middle + 1;
+      } else {
+        high = middle - 1;
+      }
+    }
+
+    var lineIndex = Math.max(0, high);
+    return {
+      line: lineIndex + 1,
+      column: offset - lineStarts[lineIndex] + 1
+    };
+  }
+
+  function trimRange(text, start, end) {
+    while (start < end && /\s/.test(text.charAt(start))) {
+      start += 1;
+    }
+    while (end > start && /\s/.test(text.charAt(end - 1))) {
+      end -= 1;
+    }
+    return { start: start, end: end };
+  }
+
+  function createIssueCollector(text, maxIssues) {
+    var issues = [];
+    var keys = Object.create(null);
+    var limit = Number.isFinite(maxIssues) ? Math.max(1, maxIssues) : 100;
+
+    function add(severity, code, message, offset, length, suggestion) {
+      if (issues.length >= limit) {
+        return;
+      }
+
+      var safeOffset = Math.max(0, Math.min(text.length, Number(offset) || 0));
+      var safeLength = Math.max(1, Number(length) || 1);
+      var key = severity + "|" + code + "|" + safeOffset + "|" + message;
+      if (keys[key]) {
+        return;
+      }
+      keys[key] = true;
+
+      issues.push({
+        severity: severity === "warning" ? "warning" : "error",
+        code: code,
+        message: message,
+        offset: safeOffset,
+        length: safeLength,
+        suggestion: suggestion || ""
+      });
+    }
+
+    return { issues: issues, add: add, limit: limit };
+  }
+
+  function validateLexicalStructure(text, collector) {
+    var stack = [];
+    var pairs = { ")": "(", "]": "[", "}": "{" };
+    var names = { "(": "괄호", "[": "대괄호", "{": "중괄호" };
+    var index = 0;
+
+    while (index < text.length) {
+      var character = text.charAt(index);
+
+      if (character === "/" && text.charAt(index + 1) === "*") {
+        var commentEnd = text.indexOf("*/", index + 2);
+        if (commentEnd === -1) {
+          collector.add("error", "unclosed-comment", "CSS 주석이 닫히지 않았습니다. '*/'를 추가하세요.", index, 2, "*/");
+          return;
+        }
+        index = commentEnd + 2;
+        continue;
+      }
+
+      if (character === "\"" || character === "'") {
+        var quote = character;
+        var stringStart = index;
+        var closed = false;
+        index += 1;
+
+        while (index < text.length) {
+          var stringCharacter = text.charAt(index);
+          if (stringCharacter === "\\") {
+            index += 2;
+            continue;
+          }
+          if (stringCharacter === quote) {
+            closed = true;
+            index += 1;
+            break;
+          }
+          if (stringCharacter === "\n" || stringCharacter === "\r") {
+            collector.add("error", "newline-in-string", "문자열이 줄바꿈 전에 닫히지 않았습니다.", stringStart, Math.max(1, index - stringStart), quote);
+            break;
+          }
+          index += 1;
+        }
+
+        if (!closed && index >= text.length) {
+          collector.add("error", "unclosed-string", "따옴표 문자열이 닫히지 않았습니다.", stringStart, Math.max(1, text.length - stringStart), quote);
+        }
+        continue;
+      }
+
+      if (character === "(" || character === "[" || character === "{") {
+        stack.push({ character: character, offset: index });
+      } else if (character === ")" || character === "]" || character === "}") {
+        if (!stack.length) {
+          collector.add("error", "unexpected-closing-token", "짝이 없는 닫는 기호 '" + character + "'가 있습니다.", index, 1);
+        } else {
+          var open = stack[stack.length - 1];
+          if (open.character === pairs[character]) {
+            stack.pop();
+          } else {
+            collector.add("error", "mismatched-closing-token", "'" + open.character + "'와 '" + character + "'의 짝이 맞지 않습니다.", index, 1, open.character === "(" ? ")" : open.character === "[" ? "]" : "}");
+            stack.pop();
+          }
+        }
+      }
+
+      index += 1;
+    }
+
+    stack.slice(-20).forEach(function (open) {
+      var close = open.character === "(" ? ")" : open.character === "[" ? "]" : "}";
+      collector.add("error", "unclosed-token", names[open.character] + " '" + open.character + "'가 닫히지 않았습니다.", open.offset, 1, close);
+    });
+  }
+
+  function findTopLevelCharacter(text, target, startIndex) {
+    var parenthesisDepth = 0;
+    var bracketDepth = 0;
+    var index = startIndex || 0;
+
+    while (index < text.length) {
+      var character = text.charAt(index);
+
+      if (character === "/" && text.charAt(index + 1) === "*") {
+        index = readComment(text, index);
+        continue;
+      }
+      if (character === "\"" || character === "'") {
+        index = readString(text, index);
+        continue;
+      }
+      if (character === "(") {
+        parenthesisDepth += 1;
+      } else if (character === ")") {
+        parenthesisDepth = Math.max(0, parenthesisDepth - 1);
+      } else if (character === "[") {
+        bracketDepth += 1;
+      } else if (character === "]") {
+        bracketDepth = Math.max(0, bracketDepth - 1);
+      } else if (parenthesisDepth === 0 && bracketDepth === 0 && character === target) {
+        return index;
+      }
+      index += 1;
+    }
+
+    return -1;
+  }
+
+  function propertyNameLooksValid(property) {
+    if (/^--[^\s:;{}]+$/.test(property)) {
+      return true;
+    }
+    return /^-?(?:[a-zA-Z_]|[^\x00-\x7F])[^\s:;{}]*$/.test(property);
+  }
+
+  function atRuleName(prelude) {
+    var match = prelude.match(/^\s*@(-?[a-zA-Z][a-zA-Z0-9-]*)/);
+    return match ? match[1].toLowerCase() : "";
+  }
+
+  function validateAtRule(prelude, absoluteOffset, collector) {
+    var name = atRuleName(prelude);
+    if (!name) {
+      collector.add("error", "invalid-at-rule", "@ 규칙 이름을 확인하세요.", absoluteOffset, Math.max(1, prelude.length));
+      return;
+    }
+
+    if (!KNOWN_AT_RULES[name] && name.charAt(0) !== "-") {
+      collector.add("warning", "unknown-at-rule", "알 수 없는 @ 규칙 '@" + name + "'입니다. 오타인지 확인하세요.", absoluteOffset, name.length + 1);
+    }
+  }
+
+  function probablePropertyBeforeColon(statement, colonIndex, valueStart) {
+    var end = colonIndex;
+    var start = end;
+
+    while (start > valueStart && /[a-zA-Z0-9_-]/.test(statement.charAt(start - 1))) {
+      start -= 1;
+    }
+
+    var property = statement.slice(start, end);
+    var before = statement.slice(valueStart, start);
+    if (!property || !/\s/.test(statement.charAt(start - 1)) || !before.trim()) {
+      return null;
+    }
+
+    return propertyNameLooksValid(property) ? { property: property, start: start } : null;
+  }
+
+  function validateDeclarationStatement(statement, absoluteOffset, collector, declarations) {
+    var range = trimRange(statement, 0, statement.length);
+    if (range.start >= range.end) {
+      return;
+    }
+
+    var content = statement.slice(range.start, range.end);
+    var contentOffset = absoluteOffset + range.start;
+
+    if (content.charAt(content.length - 1) === ";") {
+      content = content.slice(0, -1);
+    }
+
+    var cleaned = content.replace(/\/\*[\s\S]*?\*\//g, function (comment) {
+      return new Array(comment.length + 1).join(" ");
+    });
+    var cleanedRange = trimRange(cleaned, 0, cleaned.length);
+    if (cleanedRange.start >= cleanedRange.end) {
+      return;
+    }
+
+    if (cleaned.slice(cleanedRange.start).charAt(0) === "@") {
+      validateAtRule(cleaned.slice(cleanedRange.start, cleanedRange.end), contentOffset + cleanedRange.start, collector);
+      return;
+    }
+
+    var colonIndex = findTopLevelCharacter(cleaned, ":", cleanedRange.start);
+    if (colonIndex === -1 || colonIndex >= cleanedRange.end) {
+      collector.add("error", "missing-colon", "속성명과 값 사이에 ':'가 없습니다.", contentOffset + cleanedRange.start, Math.max(1, cleanedRange.end - cleanedRange.start), ":");
+      return;
+    }
+
+    var propertyRange = trimRange(cleaned, cleanedRange.start, colonIndex);
+    var valueRange = trimRange(cleaned, colonIndex + 1, cleanedRange.end);
+    var property = cleaned.slice(propertyRange.start, propertyRange.end);
+    var value = content.slice(valueRange.start, valueRange.end).trim();
+
+    if (!property) {
+      collector.add("error", "missing-property", "CSS 속성명이 비어 있습니다.", contentOffset + colonIndex, 1);
+      return;
+    }
+
+    if (!propertyNameLooksValid(property)) {
+      collector.add("error", "invalid-property-name", "CSS 속성명 '" + property + "'의 형식이 올바르지 않습니다.", contentOffset + propertyRange.start, Math.max(1, property.length));
+    }
+
+    if (!value) {
+      collector.add("error", "missing-value", "'" + property + "' 속성값이 비어 있습니다.", contentOffset + colonIndex + 1, 1);
+    }
+
+    var importantMatch = value.match(/!\s*([a-zA-Z-]+)\s*$/);
+    if (importantMatch && importantMatch[1].toLowerCase() !== "important") {
+      var importantOffset = Math.max(0, value.lastIndexOf("!"));
+      collector.add(
+        "error",
+        "important-typo",
+        "'!important' 철자가 올바르지 않습니다.",
+        contentOffset + valueRange.start + importantOffset,
+        Math.max(1, importantMatch[0].length),
+        "!important"
+      );
+    }
+
+    var nextColon = findTopLevelCharacter(cleaned, ":", colonIndex + 1);
+    if (nextColon !== -1 && nextColon < cleanedRange.end) {
+      var probable = probablePropertyBeforeColon(cleaned, nextColon, colonIndex + 1);
+      if (probable) {
+        collector.add("error", "missing-semicolon", "'" + probable.property + "' 앞 선언 끝에 ';'가 빠졌을 수 있습니다.", contentOffset + probable.start, probable.property.length, ";");
+      }
+    }
+
+    declarations.push({
+      property: property,
+      value: value.replace(/\s*!\s*[a-zA-Z-]+\s*$/i, "").trim(),
+      propertyOffset: contentOffset + propertyRange.start,
+      propertyLength: Math.max(1, property.length),
+      valueOffset: contentOffset + valueRange.start,
+      valueLength: Math.max(1, valueRange.end - valueRange.start)
+    });
+  }
+
+  function validateContainerSyntax(text, context, baseOffset, collector, declarations) {
+    var cursor = 0;
+
+    while (cursor < text.length && collector.issues.length < collector.limit) {
+      var token = findNextTopLevelToken(text, cursor);
+
+      if (!token) {
+        var trailingRange = trimRange(text, cursor, text.length);
+        if (trailingRange.start < trailingRange.end) {
+          var trailing = text.slice(trailingRange.start, trailingRange.end);
+          if (context === "rule") {
+            validateDeclarationStatement(trailing, baseOffset + trailingRange.start, collector, declarations);
+          } else if (trailing.charAt(0) === "@") {
+            validateAtRule(trailing, baseOffset + trailingRange.start, collector);
+          } else {
+            collector.add("error", "missing-rule-block", "선택자 뒤에 '{ ... }' 규칙 블록이 필요합니다.", baseOffset + trailingRange.start, Math.max(1, trailing.length), "{}");
+          }
+        }
+        break;
+      }
+
+      if (token.token === ";") {
+        var statement = text.slice(cursor, token.index + 1);
+        var statementRange = trimRange(statement, 0, statement.length);
+        if (statementRange.start < statementRange.end) {
+          var normalized = statement.slice(statementRange.start, statementRange.end);
+          if (context === "stylesheet" && normalized.replace(/^\/\*[\s\S]*?\*\/\s*/, "").charAt(0) !== "@") {
+            collector.add("error", "declaration-outside-rule", "CSS 선언이 선택자 블록 밖에 있습니다.", baseOffset + cursor + statementRange.start, Math.max(1, normalized.length));
+          } else {
+            validateDeclarationStatement(statement, baseOffset + cursor, collector, declarations);
+          }
+        }
+        cursor = token.index + 1;
+        continue;
+      }
+
+      var closeIndex = findMatchingBrace(text, token.index);
+      var preludeRange = trimRange(text, cursor, token.index);
+      var prelude = text.slice(preludeRange.start, preludeRange.end);
+
+      if (!prelude) {
+        collector.add("error", "missing-rule-prelude", "'{' 앞에 선택자 또는 @ 규칙이 없습니다.", baseOffset + token.index, 1);
+      } else if (prelude.charAt(0) === "@") {
+        validateAtRule(prelude, baseOffset + preludeRange.start, collector);
+      }
+
+      if (closeIndex === -1) {
+        break;
+      }
+
+      var body = text.slice(token.index + 1, closeIndex);
+      var childContext = isGroupingAtRule(prelude, body) ? "stylesheet" : "rule";
+      validateContainerSyntax(body, childContext, baseOffset + token.index + 1, collector, declarations);
+      cursor = closeIndex + 1;
+    }
+  }
+
+  function validateCssSyntax(text, options) {
+    var source = typeof text === "string" ? text : "";
+    var settings = options || {};
+    var collector = createIssueCollector(source, settings.maxIssues);
+    var declarations = [];
+
+    if (!source.trim()) {
+      return {
+        valid: true,
+        errors: 0,
+        warnings: 0,
+        issues: [],
+        declarations: []
+      };
+    }
+
+    validateLexicalStructure(source, collector);
+    validateContainerSyntax(source, hasTopLevelBlock(source) ? "stylesheet" : "rule", 0, collector, declarations);
+
+    if (typeof settings.declarationValidator === "function") {
+      declarations.forEach(function (declaration) {
+        var extraIssues;
+        try {
+          extraIssues = settings.declarationValidator(declaration) || [];
+        } catch (error) {
+          extraIssues = [];
+        }
+
+        if (!Array.isArray(extraIssues)) {
+          extraIssues = [extraIssues];
+        }
+
+        extraIssues.forEach(function (issue) {
+          if (!issue || !issue.message) {
+            return;
+          }
+          var target = issue.target === "value" ? "value" : "property";
+          collector.add(
+            issue.severity === "error" ? "error" : "warning",
+            issue.code || "declaration-warning",
+            issue.message,
+            target === "value" ? declaration.valueOffset : declaration.propertyOffset,
+            target === "value" ? declaration.valueLength : declaration.propertyLength,
+            issue.suggestion || ""
+          );
+        });
+      });
+    }
+
+    var lineStarts = buildLineStarts(source);
+    collector.issues.sort(function (left, right) {
+      if (left.offset !== right.offset) {
+        return left.offset - right.offset;
+      }
+      return left.severity === right.severity ? 0 : left.severity === "error" ? -1 : 1;
+    });
+
+    collector.issues.forEach(function (issue) {
+      var location = locateOffset(lineStarts, issue.offset);
+      issue.line = location.line;
+      issue.column = location.column;
+    });
+
+    var errors = collector.issues.filter(function (issue) {
+      return issue.severity === "error";
+    }).length;
+    var warnings = collector.issues.length - errors;
+
+    return {
+      valid: errors === 0,
+      errors: errors,
+      warnings: warnings,
+      issues: collector.issues,
+      declarations: declarations
+    };
+  }
+
   global.PXVWCore = {
     parseFiniteNumber: parseFiniteNumber,
     formatNumber: formatNumber,
     scanAndTransformUnits: scanAndTransformUnits,
     filterMatchingDeclarations: filterMatchingDeclarations,
     byteSize: byteSize,
-    formatBytes: formatBytes
+    formatBytes: formatBytes,
+    validateCssSyntax: validateCssSyntax
   };
 }(window));
