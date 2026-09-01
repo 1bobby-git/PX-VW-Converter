@@ -3,27 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="description" content="PX와 VW를 즉시 계산하고 CSS 소스의 단위를 안전하게 일괄 변환하는 무료 브라우저 도구입니다.">
-  <meta name="theme-color" id="themeColor" content="#f4f7fb">
+  <meta name="description" content="PX와 VW를 실시간 계산하고 CSS 문법 오류를 검사하며 소스 단위를 안전하게 일괄 변환하는 무료 브라우저 도구입니다.">
+  <meta name="theme-color" content="#f4f7fb">
+  <meta name="color-scheme" content="light">
   <meta property="og:type" content="website">
   <meta property="og:title" content="PX ↔ VW Converter">
-  <meta property="og:description" content="단일 값과 CSS 소스를 PX ↔ VW로 빠르게 변환하세요.">
+  <meta property="og:description" content="단일 값과 CSS 소스를 PX ↔ VW로 실시간 변환하고 CSS 오타를 검사하세요.">
   <meta property="og:url" content="https://1bobby-git.github.io/PX-VW-Converter/">
   <link rel="canonical" href="https://1bobby-git.github.io/PX-VW-Converter/">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%234f46e5'/%3E%3Cpath d='M14 20h13c7 0 11 4 11 10s-4 10-11 10h-5v7h-8V20Zm8 6v8h4c3 0 4-1 4-4s-1-4-4-4h-4Zm18-6h8l4 16 4-16h8l-8 27h-8l-8-27Z' fill='white'/%3E%3C/svg%3E">
-  <title>PX ↔ VW Converter | CSS 단위 변환기</title>
-  <script>
-    (function () {
-      try {
-        var savedTheme = localStorage.getItem("pxvw-theme");
-        var theme = savedTheme || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-        document.documentElement.dataset.theme = theme;
-        document.documentElement.classList.add("js");
-      } catch (error) {
-        document.documentElement.dataset.theme = "light";
-      }
-    }());
-  </script>
+  <title>PX ↔ VW Converter | CSS 문법 검사·단위 변환기</title>
   <link rel="stylesheet" href="./styles-1.css">
   <link rel="stylesheet" href="./styles-2.css">
   <link rel="stylesheet" href="./styles-3.css">
@@ -36,12 +25,6 @@
   <svg class="svg-sprite" aria-hidden="true">
     <symbol id="icon-github" viewBox="0 0 24 24">
       <path fill="currentColor" d="M12 .7a11.5 11.5 0 0 0-3.64 22.42c.58.1.79-.25.79-.56v-2.24c-3.22.7-3.9-1.37-3.9-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.17.08 1.78 1.2 1.78 1.2 1.04 1.78 2.72 1.27 3.38.97.1-.75.4-1.27.74-1.56-2.57-.3-5.27-1.28-5.27-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.16 1.18a10.9 10.9 0 0 1 5.76 0c2.2-1.49 3.16-1.18 3.16-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.71 5.39-5.29 5.68.42.36.79 1.06.79 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z"/>
-    </symbol>
-    <symbol id="icon-sun" viewBox="0 0 24 24">
-      <path d="M12 3V1m0 22v-2M4.22 4.22 2.8 2.8m18.4 18.4-1.42-1.42M3 12H1m22 0h-2M4.22 19.78 2.8 21.2m18.4-18.4-1.42 1.42M17 12a5 5 0 1 1-10 0 5 5 0 0 1 10 0Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-    </symbol>
-    <symbol id="icon-moon" viewBox="0 0 24 24">
-      <path d="M20.5 15.4A8.6 8.6 0 0 1 8.6 3.5 9 9 0 1 0 20.5 15.4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
     </symbol>
     <symbol id="icon-copy" viewBox="0 0 24 24">
       <rect x="8" y="8" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/>
@@ -62,6 +45,9 @@
     <symbol id="icon-spark" viewBox="0 0 24 24">
       <path d="m12 2 1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5L12 2Zm7 13 .75 2.25L22 18l-2.25.75L19 21l-.75-2.25L16 18l2.25-.75L19 15Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
     </symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24">
+      <path d="m5 12 4 4L19 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
   </svg>
 
   <main class="app-shell" id="mainContent">
@@ -75,7 +61,7 @@
         <div>
           <p class="eyebrow">RESPONSIVE UNIT TOOL</p>
           <h1>PX ↔ VW Converter</h1>
-          <p class="hero-copy">단일 값부터 CSS 전체 소스까지, 기준 뷰포트에 맞춰 빠르고 안전하게 변환합니다.</p>
+          <p class="hero-copy">단일 값부터 CSS 전체 소스까지, 기준 뷰포트에 맞춰 실시간으로 변환하고 문법 오류를 확인합니다.</p>
         </div>
       </div>
 
@@ -87,10 +73,6 @@
         <a class="icon-button" href="https://github.com/1bobby-git/PX-VW-Converter" target="_blank" rel="noopener noreferrer" aria-label="GitHub 저장소 새 창에서 열기" title="GitHub 저장소">
           <svg><use href="#icon-github"></use></svg>
         </a>
-        <button class="icon-button theme-toggle" id="themeToggle" type="button" aria-label="다크 모드로 변경" title="테마 변경">
-          <svg class="icon-sun"><use href="#icon-sun"></use></svg>
-          <svg class="icon-moon"><use href="#icon-moon"></use></svg>
-        </button>
       </div>
     </header>
 
@@ -107,7 +89,7 @@
         <div class="field-group viewport-field">
           <label for="viewportWidth">기준 뷰포트 너비</label>
           <div class="control-with-suffix">
-            <input id="viewportWidth" type="number" min="1" max="100000" step="1" value="375" inputmode="numeric" autocomplete="off" aria-describedby="viewportHelp viewportError">
+            <input id="viewportWidth" type="number" min="1" max="100000" step="1" value="320" inputmode="numeric" autocomplete="off" aria-describedby="viewportHelp viewportError">
             <span class="control-suffix" aria-hidden="true">px</span>
           </div>
           <p class="field-help" id="viewportHelp">디자인 시안의 가로 너비를 입력하세요.</p>
@@ -133,11 +115,11 @@
         <fieldset class="preset-field">
           <legend>빠른 뷰포트 선택</legend>
           <div class="preset-list" aria-label="자주 사용하는 뷰포트 너비">
+            <button type="button" class="preset-chip" data-viewport="320" aria-pressed="true">320</button>
             <button type="button" class="preset-chip" data-viewport="360" aria-pressed="false">360</button>
-            <button type="button" class="preset-chip" data-viewport="375" aria-pressed="true">375</button>
-            <button type="button" class="preset-chip" data-viewport="390" aria-pressed="false">390</button>
-            <button type="button" class="preset-chip" data-viewport="414" aria-pressed="false">414</button>
-            <button type="button" class="preset-chip" data-viewport="768" aria-pressed="false">768</button>
+            <button type="button" class="preset-chip" data-viewport="800" aria-pressed="false">800</button>
+            <button type="button" class="preset-chip" data-viewport="801" aria-pressed="false">801</button>
+            <button type="button" class="preset-chip" data-viewport="1100" aria-pressed="false">1100</button>
             <button type="button" class="preset-chip" data-viewport="1440" aria-pressed="false">1440</button>
             <button type="button" class="preset-chip" data-viewport="1920" aria-pressed="false">1920</button>
           </div>
@@ -182,7 +164,7 @@
                   <span>복사</span>
                 </button>
               </div>
-              <p class="formula" id="pxFormula">PX ÷ 375 × 100</p>
+              <p class="formula" id="pxFormula">PX ÷ 320 × 100</p>
             </div>
           </div>
 
@@ -208,7 +190,7 @@
             <div class="number-field">
               <label for="vwInput">VW 값</label>
               <div class="control-with-suffix large-control">
-                <input id="vwInput" type="number" step="any" inputmode="decimal" autocomplete="off" placeholder="예: 4.27">
+                <input id="vwInput" type="number" step="any" inputmode="decimal" autocomplete="off" placeholder="예: 5">
                 <span class="control-suffix" aria-hidden="true">vw</span>
               </div>
             </div>
@@ -222,7 +204,7 @@
                   <span>복사</span>
                 </button>
               </div>
-              <p class="formula" id="vwFormula">VW ÷ 100 × 375</p>
+              <p class="formula" id="vwFormula">VW ÷ 100 × 320</p>
             </div>
           </div>
 
@@ -243,7 +225,7 @@
           <div>
             <p class="section-kicker">CSS WORKSPACE</p>
             <h2 id="cssConverterTitle">CSS 소스 일괄 변환</h2>
-            <p class="section-description">주석, 따옴표 문자열, URL 내부 값은 건드리지 않고 실제 CSS 단위만 변환합니다.</p>
+            <p class="section-description">입력 즉시 문법을 검사하고, 주석·문자열·URL 내부 값은 제외한 실제 CSS 단위만 변환합니다.</p>
           </div>
         </div>
 
@@ -275,14 +257,13 @@
           </span>
         </label>
 
-        <label class="check-control">
-          <input id="autoConvert" type="checkbox" checked>
-          <span class="check-box" aria-hidden="true"></span>
+        <div class="realtime-control" aria-live="polite">
+          <span class="realtime-icon" aria-hidden="true"><svg><use href="#icon-check"></use></svg></span>
           <span>
-            <strong>자동 변환</strong>
-            <small>입력을 멈추면 결과를 자동 갱신합니다.</small>
+            <strong>실시간 변환·문법 검사</strong>
+            <small id="realtimeStatus">실시간 변환·검증 대기</small>
           </span>
-        </label>
+        </div>
       </div>
 
       <div class="editor-grid">
@@ -311,11 +292,20 @@
             <span id="inputFileName">직접 입력</span>
             <span id="inputCharCount">0자</span>
           </div>
-          <textarea id="cssInput" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="변환할 CSS 소스" placeholder=".card {
+          <textarea id="cssInput" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="변환하고 검사할 CSS 소스" aria-describedby="validationSummary validationCount" placeholder=".card {
   width: 320px;
   padding: 24px 16px;
   border-radius: 12px;
 }"></textarea>
+          <div class="validation-panel" id="cssValidation" data-state="empty" role="status" aria-live="polite" aria-atomic="false">
+            <div class="validation-head">
+              <span class="validation-dot" aria-hidden="true"></span>
+              <strong id="validationSummary">CSS 입력 대기</strong>
+              <span id="validationCount">입력과 동시에 문법을 검사합니다.</span>
+            </div>
+            <ol class="validation-list" id="validationList" hidden></ol>
+            <p class="validation-more" id="validationMore" hidden></p>
+          </div>
           <input class="visually-hidden-file" id="cssFileInput" type="file" accept=".css,text/css">
           <p class="drop-hint">CSS 파일을 이 영역에 끌어다 놓을 수도 있습니다. 최대 2MB</p>
         </article>
@@ -341,7 +331,7 @@
             <span id="outputDirection">PX → VW</span>
             <span id="outputCharCount">0자</span>
           </div>
-          <textarea id="cssOutput" readonly spellcheck="false" aria-label="변환된 CSS 결과" placeholder="변환 결과가 여기에 표시됩니다."></textarea>
+          <textarea id="cssOutput" readonly spellcheck="false" aria-label="실시간으로 변환된 CSS 결과" placeholder="입력과 동시에 변환 결과가 표시됩니다."></textarea>
           <p class="drop-hint">결과는 서버로 전송되지 않으며 브라우저 안에서만 생성됩니다.</p>
         </article>
       </div>
@@ -360,9 +350,9 @@
     </section>
 
     <section class="info-strip" aria-label="도구 특징">
-      <div><strong>외부 라이브러리 0개</strong><span>별도 다운로드 없이 즉시 실행</span></div>
-      <div><strong>로컬 처리</strong><span>입력한 CSS를 서버로 전송하지 않음</span></div>
-      <div><strong>반응형·접근성 대응</strong><span>모바일, 키보드, 다크 모드 지원</span></div>
+      <div><strong>실시간 계산·변환</strong><span>입력과 설정 변경 즉시 결과 갱신</span></div>
+      <div><strong>CSS 문법 검사</strong><span>괄호, 선언, 속성·값 오타 가능성 안내</span></div>
+      <div><strong>로컬 처리·접근성</strong><span>서버 전송 없이 모바일과 키보드 지원</span></div>
     </section>
 
     <footer class="site-footer">
