@@ -55,17 +55,30 @@
 - CSS 입력 영역에서 `Ctrl + Enter` 또는 `Command + Enter`: 즉시 변환
 - CSS 입력 영역에서 `Tab`: 공백 2칸 입력
 
+## 자동 테스트
+
+Node.js 22 이상에서 별도 패키지 설치 없이 변환 엔진 테스트를 실행할 수 있습니다.
+
+```bash
+node --test tests/converter-core.test.js
+```
+
+`main` 브랜치 푸시와 Pull Request마다 GitHub Actions가 JavaScript 문법 검사와 회귀 테스트를 자동 실행합니다.
+
 ## 구성
 
 ```text
 .
-├── index.html          # 시맨틱 마크업과 화면 구조
-├── styles-1.css        # 공통 디자인 토큰과 기본 레이아웃
-├── styles-2.css        # 변환 카드와 CSS 작업공간
-├── styles-3.css        # 에디터, 반응형, 다크 모드, 접근성
-├── converter-core.js   # CSS 탐색·필터·단위 변환 엔진
-├── app-ui.js           # 화면 상태, 저장, 복사, 파일 처리
-└── .nojekyll           # GitHub Pages 정적 배포 설정
+├── .github/workflows/test.yml  # 문법 검사 및 회귀 테스트 자동화
+├── tests/
+│   └── converter-core.test.js  # 변환 엔진 테스트
+├── index.html                  # 시맨틱 마크업과 화면 구조
+├── styles-1.css                # 공통 디자인 토큰과 기본 레이아웃
+├── styles-2.css                # 변환 카드와 CSS 작업공간
+├── styles-3.css                # 에디터, 반응형, 다크 모드, 접근성
+├── converter-core.js           # CSS 탐색·필터·단위 변환 엔진
+├── app-ui.js                   # 화면 상태, 저장, 복사, 파일 처리
+└── .nojekyll                   # GitHub Pages 정적 배포 설정
 ```
 
 ## 기술적 특징
