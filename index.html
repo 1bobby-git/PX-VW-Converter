@@ -2,420 +2,379 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>VW 계산기 · VW 변환기 | PX↔VW 변환 도구</title>
-  <style>
-    :root { color-scheme: light; }
-
-    /* 오버플로우/박스사이징 정리 */
-    * { box-sizing: border-box; }
-    html, body { width: 100%; }
-    body {
-      margin: 0;
-      overflow-x: hidden;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-      background: #f6f7fb;
-      color: #111;
-    }
-
-    /* "전체 폭"은 쓰되, 너무 넓어지면 가독성 떨어져서 안전한 상한만 둠 */
-    .wrap {
-      width: 100%;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 16px 16px 32px;
-    }
-
-    h1 { margin: 4px 0 8px; font-size: 24px; }
-    p.lead { margin: 0 0 12px; color:#333; line-height:1.55; font-size: 14px; }
-
-    .grid { display: grid; gap: 12px; grid-template-columns: 1fr; }
-    @media (min-width: 860px){ .grid { grid-template-columns: 1fr 1fr; } }
-
-    /* CSS 변환 영역은 더 넓게 */
-    .cssGrid { display:grid; gap:12px; grid-template-columns: 1fr; }
-    @media (min-width: 980px){ .cssGrid { grid-template-columns: 1fr 1fr; } }
-
-    .card {
-      background:#fff;
-      border: 1px solid #e6e8ef;
-      border-radius: 14px;
-      box-shadow: 0 6px 22px rgba(12, 19, 40, 0.06);
-      padding: 12px;
-      min-width: 0; /* grid overflow 방지 */
-    }
-    .card h2 { margin: 0 0 8px; font-size: 16px; }
-
-    .row { display:flex; gap: 10px; flex-wrap: wrap; align-items: end; min-width: 0; }
-
-    label { display:block; font-size: 12px; color:#444; margin: 0 0 6px; }
-
-    /* 컨트롤 높이 통일 */
-    input[type="number"], select, button {
-      height: 40px;
-      line-height: 40px;
-      padding: 0 12px;
-      font-size: 14px;
-      border-radius: 10px;
-    }
-
-    input[type="number"], textarea, select {
-      width: 100%;
-      border: 1px solid #d7dbe7;
-      outline: none;
-      background:#fff;
-      min-width: 0;
-    }
-
-    /* select는 line-height 이슈가 있어 padding만 맞춤 */
-    select { line-height: normal; padding-top: 0; padding-bottom: 0; }
-
-    /* textarea는 높이만 별도로 */
-    textarea {
-      min-height: 280px;
-      resize: vertical;
-      padding: 10px 12px;
-      font-size: 14px;
-      border-radius: 10px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      line-height: 1.5;
-    }
-
-    input[type="number"]:focus, textarea:focus, select:focus {
-      border-color:#6b7cff;
-      box-shadow: 0 0 0 3px rgba(107,124,255,0.18);
-    }
-
-    .col { flex: 1 1 220px; min-width: 220px; }
-
-    .btns { display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px; }
-    button {
-      border: 1px solid #d7dbe7;
-      background: #111;
-      color: #fff;
-      cursor: pointer;
-      line-height: 40px; /* 버튼 텍스트 정렬 */
-    }
-    button.secondary { background:#fff; color:#111; }
-    button:active { transform: translateY(1px); }
-
-    .hint { margin-top: 6px; font-size: 12px; color:#666; line-height:1.5; }
-
-    .kv { display:flex; gap: 12px; flex-wrap: wrap; min-width: 0; }
-    .kv .item { flex: 1 1 220px; min-width: 220px; }
-
-    .out {
-      font-weight: 700;
-      font-size: 16px;
-      padding: 10px 12px;
-      border-radius: 10px;
-      background:#f2f4ff;
-      border: 1px solid #dbe0ff;
-      word-break: break-all;
-      min-height: 40px;
-      display:flex;
-      align-items:center;
-    }
-
-    .check {
-      display:flex; gap:8px; align-items:center;
-      margin: 4px 0 8px;
-      font-size: 13px; color:#222;
-    }
-    .check input { width: 16px; height: 16px; }
-
-    footer { margin-top: 14px; color:#777; font-size: 12px; text-align:center; }
-    code.k { background:#f0f2f7; padding: 2px 6px; border-radius: 6px; }
-
-    /* 상단(뷰포트/정밀도) 카드 더 컴팩트 */
-    .compact { padding: 10px; }
-    .compact .hint { margin-top: 4px; }
-
-    /* 큰 화면에서만 textarea 약간 더 키움(너무 과한 값은 피함) */
-    @media (min-width: 1200px){
-      textarea { min-height: 360px; }
-    }
-  </style>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="description" content="PX와 VW를 즉시 계산하고 CSS 소스의 단위를 안전하게 일괄 변환하는 무료 브라우저 도구입니다.">
+  <meta name="theme-color" id="themeColor" content="#f4f7fb">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="PX ↔ VW Converter">
+  <meta property="og:description" content="단일 값과 CSS 소스를 PX ↔ VW로 빠르게 변환하세요.">
+  <meta property="og:url" content="https://1bobby-git.github.io/PX-VW-Converter/">
+  <link rel="canonical" href="https://1bobby-git.github.io/PX-VW-Converter/">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%234f46e5'/%3E%3Cpath d='M14 20h13c7 0 11 4 11 10s-4 10-11 10h-5v7h-8V20Zm8 6v8h4c3 0 4-1 4-4s-1-4-4-4h-4Zm18-6h8l4 16 4-16h8l-8 27h-8l-8-27Z' fill='white'/%3E%3C/svg%3E">
+  <title>PX ↔ VW Converter | CSS 단위 변환기</title>
+  <script>
+    (function () {
+      try {
+        var savedTheme = localStorage.getItem("pxvw-theme");
+        var theme = savedTheme || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.classList.add("js");
+      } catch (error) {
+        document.documentElement.dataset.theme = "light";
+      }
+    }());
+  </script>
+  <link rel="stylesheet" href="./styles-1.css">
+  <link rel="stylesheet" href="./styles-2.css">
+  <link rel="stylesheet" href="./styles-3.css">
+  <script src="./converter-core.js" defer></script>
+  <script src="./app-ui.js" defer></script>
 </head>
 <body>
-  <div class="wrap">
-    <h1>VW 계산기 · VW 변환기 (PX ↔ VW)</h1>
-    <p class="lead">PX(픽셀)과 VW(뷰포트 너비) 단위를 변환하고, CSS 소스의 PX 값을 VW로 일괄 변환합니다.</p>
+  <a class="skip-link" href="#mainContent">본문 바로가기</a>
 
-    <div class="card compact" style="margin-bottom:12px;">
-      <div class="row">
-        <div class="col">
-          <label for="viewportWidth">뷰포트 너비 (px)</label>
-          <input id="viewportWidth" type="number" min="1" step="1" value="375">
-          <div class="hint">예: <code class="k">360</code> / <code class="k">375</code> / <code class="k">414</code></div>
-        </div>
-        <div class="col">
-          <label for="precision">소수점 자릿수</label>
-          <select id="precision">
-            <option value="0">0</option>
-            <option value="1">1</option>
-            <option value="2" selected>2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-          </select>
-          <div class="hint">VW/PX 출력 자릿수</div>
-        </div>
-      </div>
-    </div>
+  <svg class="svg-sprite" aria-hidden="true">
+    <symbol id="icon-github" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M12 .7a11.5 11.5 0 0 0-3.64 22.42c.58.1.79-.25.79-.56v-2.24c-3.22.7-3.9-1.37-3.9-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.17.08 1.78 1.2 1.78 1.2 1.04 1.78 2.72 1.27 3.38.97.1-.75.4-1.27.74-1.56-2.57-.3-5.27-1.28-5.27-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.16 1.18a10.9 10.9 0 0 1 5.76 0c2.2-1.49 3.16-1.18 3.16-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.71 5.39-5.29 5.68.42.36.79 1.06.79 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z"/>
+    </symbol>
+    <symbol id="icon-sun" viewBox="0 0 24 24">
+      <path d="M12 3V1m0 22v-2M4.22 4.22 2.8 2.8m18.4 18.4-1.42-1.42M3 12H1m22 0h-2M4.22 19.78 2.8 21.2m18.4-18.4-1.42 1.42M17 12a5 5 0 1 1-10 0 5 5 0 0 1 10 0Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-moon" viewBox="0 0 24 24">
+      <path d="M20.5 15.4A8.6 8.6 0 0 1 8.6 3.5 9 9 0 1 0 20.5 15.4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-copy" viewBox="0 0 24 24">
+      <rect x="8" y="8" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-trash" viewBox="0 0 24 24">
+      <path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-file" viewBox="0 0 24 24">
+      <path d="M6 2h8l4 4v16H6V2Zm8 0v5h5M9 12h6m-6 4h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24">
+      <path d="M12 3v12m-5-5 5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-arrow" viewBox="0 0 24 24">
+      <path d="M5 12h14m-5-5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-spark" viewBox="0 0 24 24">
+      <path d="m12 2 1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5L12 2Zm7 13 .75 2.25L22 18l-2.25.75L19 21l-.75-2.25L16 18l2.25-.75L19 15Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    </symbol>
+  </svg>
 
-    <div class="grid">
-      <div class="card">
-        <h2>PX → VW 변환</h2>
-        <div class="kv">
-          <div class="item">
-            <label for="pxInput">PX</label>
-            <input id="pxInput" type="number" step="0.01" placeholder="예: 16">
-          </div>
-          <div class="item">
-            <label>VW</label>
-            <div class="out" id="vwOutput">-</div>
-          </div>
+  <main class="app-shell" id="mainContent">
+    <header class="hero">
+      <div class="brand-block">
+        <div class="brand-mark" aria-hidden="true">
+          <span>PX</span>
+          <svg viewBox="0 0 24 24"><use href="#icon-arrow"></use></svg>
+          <span>VW</span>
         </div>
-        <div class="btns">
-          <button id="btnPxToVw">변환</button>
-          <button class="secondary" id="btnCopyVw">VW 복사</button>
-          <button class="secondary" id="btnClear1">초기화</button>
-        </div>
-        <div class="hint">공식: <code class="k">VW = (PX ÷ 뷰포트너비) × 100</code></div>
-      </div>
-
-      <div class="card">
-        <h2>VW → PX 변환</h2>
-        <div class="kv">
-          <div class="item">
-            <label for="vwInput">VW</label>
-            <input id="vwInput" type="number" step="0.01" placeholder="예: 4.27">
-          </div>
-          <div class="item">
-            <label>PX</label>
-            <div class="out" id="pxOutput">-</div>
-          </div>
-        </div>
-        <div class="btns">
-          <button id="btnVwToPx">변환</button>
-          <button class="secondary" id="btnCopyPx">PX 복사</button>
-          <button class="secondary" id="btnClear2">초기화</button>
-        </div>
-        <div class="hint">공식: <code class="k">PX = (VW ÷ 100) × 뷰포트너비</code></div>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top:12px;">
-      <h2>CSS 소스 변환</h2>
-
-      <div class="check">
-        <input id="onlyPxProps" type="checkbox" checked>
-        <label for="onlyPxProps" style="margin:0;">px가 포함된 선언만 유지 + 비어있는 블록 삭제</label>
-      </div>
-
-      <div class="cssGrid">
-        <div class="card" style="box-shadow:none; border-style:dashed;">
-          <h2 style="font-size:15px;">CSS 소스 입력</h2>
-          <textarea id="cssInput" placeholder="예) margin-top:16px;text-align:center;
-예) .box{margin-top:16px;text-align:center;padding:0 20px;}
-예) .a{text-align:center;}  (→ 비어있어져서 삭제됨)"></textarea>
-          <div class="btns">
-            <button id="btnConvertCss">PX → VW 변환</button>
-            <button class="secondary" id="btnClearCss">초기화</button>
-          </div>
-          <div class="hint">
-            체크 ON이면 <code class="k">px</code>가 들어있는 선언만 남깁니다.<br>
-            제거 후 <code class="k">{}</code>가 되는 규칙은 통째로 삭제합니다.
-          </div>
-        </div>
-
-        <div class="card" style="box-shadow:none; border-style:dashed;">
-          <h2 style="font-size:15px;">변환된 CSS</h2>
-          <textarea id="cssOutput" readonly placeholder="여기에 결과가 출력됩니다."></textarea>
-          <div class="btns">
-            <button class="secondary" id="btnCopyCss">결과 복사</button>
-          </div>
-          <div class="hint">CSS 안의 <code class="k">숫자px</code>를 찾아 <code class="k">vw</code>로 변환합니다.</div>
+        <div>
+          <p class="eyebrow">RESPONSIVE UNIT TOOL</p>
+          <h1>PX ↔ VW Converter</h1>
+          <p class="hero-copy">단일 값부터 CSS 전체 소스까지, 기준 뷰포트에 맞춰 빠르고 안전하게 변환합니다.</p>
         </div>
       </div>
-    </div>
 
-    <footer>© PX↔VW Converter</footer>
-  </div>
+      <div class="hero-actions">
+        <span class="local-badge">
+          <span class="status-dot" aria-hidden="true"></span>
+          브라우저에서만 처리
+        </span>
+        <a class="icon-button" href="https://github.com/1bobby-git/PX-VW-Converter" target="_blank" rel="noopener noreferrer" aria-label="GitHub 저장소 새 창에서 열기" title="GitHub 저장소">
+          <svg><use href="#icon-github"></use></svg>
+        </a>
+        <button class="icon-button theme-toggle" id="themeToggle" type="button" aria-label="다크 모드로 변경" title="테마 변경">
+          <svg class="icon-sun"><use href="#icon-sun"></use></svg>
+          <svg class="icon-moon"><use href="#icon-moon"></use></svg>
+        </button>
+      </div>
+    </header>
 
-  <script>
-    function $(id) { return document.getElementById(id); }
+    <section class="panel settings-panel" aria-labelledby="settingsTitle">
+      <div class="section-heading compact-heading">
+        <div>
+          <p class="section-kicker">기준 설정</p>
+          <h2 id="settingsTitle">변환 기준을 선택하세요</h2>
+        </div>
+        <p class="section-description">설정은 현재 브라우저에 자동 저장됩니다.</p>
+      </div>
 
-    function toNumber(v) {
-      var n = parseFloat(v);
-      if (isNaN(n)) return null;
-      return n;
-    }
+      <div class="settings-grid">
+        <div class="field-group viewport-field">
+          <label for="viewportWidth">기준 뷰포트 너비</label>
+          <div class="control-with-suffix">
+            <input id="viewportWidth" type="number" min="1" max="100000" step="1" value="375" inputmode="numeric" autocomplete="off" aria-describedby="viewportHelp viewportError">
+            <span class="control-suffix" aria-hidden="true">px</span>
+          </div>
+          <p class="field-help" id="viewportHelp">디자인 시안의 가로 너비를 입력하세요.</p>
+          <p class="field-error" id="viewportError" role="alert" hidden>1 이상의 유효한 너비를 입력하세요.</p>
+        </div>
 
-    function getViewportWidth() {
-      var vw = toNumber($("viewportWidth").value);
-      if (!vw || vw <= 0) return null;
-      return vw;
-    }
+        <div class="field-group precision-field">
+          <label for="precision">최대 소수점 자릿수</label>
+          <div class="select-wrap">
+            <select id="precision" aria-describedby="precisionHelp">
+              <option value="0">0자리</option>
+              <option value="1">1자리</option>
+              <option value="2" selected>2자리</option>
+              <option value="3">3자리</option>
+              <option value="4">4자리</option>
+              <option value="5">5자리</option>
+              <option value="6">6자리</option>
+            </select>
+          </div>
+          <p class="field-help" id="precisionHelp">불필요한 뒤쪽 0은 자동으로 제거합니다.</p>
+        </div>
 
-    function getPrecision() {
-      var p = parseInt($("precision").value, 10);
-      if (isNaN(p) || p < 0) return 2;
-      return p;
-    }
+        <fieldset class="preset-field">
+          <legend>빠른 뷰포트 선택</legend>
+          <div class="preset-list" aria-label="자주 사용하는 뷰포트 너비">
+            <button type="button" class="preset-chip" data-viewport="360" aria-pressed="false">360</button>
+            <button type="button" class="preset-chip" data-viewport="375" aria-pressed="true">375</button>
+            <button type="button" class="preset-chip" data-viewport="390" aria-pressed="false">390</button>
+            <button type="button" class="preset-chip" data-viewport="414" aria-pressed="false">414</button>
+            <button type="button" class="preset-chip" data-viewport="768" aria-pressed="false">768</button>
+            <button type="button" class="preset-chip" data-viewport="1440" aria-pressed="false">1440</button>
+            <button type="button" class="preset-chip" data-viewport="1920" aria-pressed="false">1920</button>
+          </div>
+        </fieldset>
+      </div>
+    </section>
 
-    function roundTo(n, p) {
-      var m = Math.pow(10, p);
-      return Math.round(n * m) / m;
-    }
+    <section class="single-converter-section" aria-labelledby="singleConverterTitle">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">빠른 계산</p>
+          <h2 id="singleConverterTitle">단일 값 변환</h2>
+        </div>
+        <span class="live-badge"><span aria-hidden="true">●</span> 입력 즉시 계산</span>
+      </div>
 
-    function formatNum(n, p) {
-      var r = roundTo(n, p);
-      if (p === 0) return String(Math.round(r));
-      return r.toFixed(p);
-    }
+      <div class="converter-grid">
+        <form class="converter-card" id="pxToVwForm" novalidate>
+          <div class="converter-card-head">
+            <div>
+              <span class="direction-label">PX TO VW</span>
+              <h3>PX → VW</h3>
+            </div>
+            <div class="unit-flow" aria-hidden="true"><span>px</span><svg><use href="#icon-arrow"></use></svg><span>vw</span></div>
+          </div>
 
-    function copyText(text) {
-      if (!text || text === "-") return;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text);
-        return;
-      }
-      var ta = document.createElement("textarea");
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand("copy"); } catch (e) {}
-      document.body.removeChild(ta);
-    }
+          <div class="converter-body">
+            <div class="number-field">
+              <label for="pxInput">PX 값</label>
+              <div class="control-with-suffix large-control">
+                <input id="pxInput" type="number" step="any" inputmode="decimal" autocomplete="off" placeholder="예: 16">
+                <span class="control-suffix" aria-hidden="true">px</span>
+              </div>
+            </div>
 
-    function keepOnlyPxDeclarations(styleText) {
-      if (!styleText) return "";
+            <div class="result-block">
+              <span class="result-label">변환 결과</span>
+              <div class="result-row">
+                <output id="vwOutput" for="pxInput viewportWidth" aria-live="polite">—</output>
+                <button class="result-copy" id="btnCopyVw" type="button" disabled aria-label="VW 결과 복사">
+                  <svg><use href="#icon-copy"></use></svg>
+                  <span>복사</span>
+                </button>
+              </div>
+              <p class="formula" id="pxFormula">PX ÷ 375 × 100</p>
+            </div>
+          </div>
 
-      var list = styleText.split(";");
-      var kept = [];
-      var i, decl, idx, prop, value;
+          <div class="card-actions">
+            <button class="button primary" type="submit">계산하기</button>
+            <button class="button ghost" id="btnClearPx" type="button">
+              <svg><use href="#icon-trash"></use></svg>
+              초기화
+            </button>
+          </div>
+        </form>
 
-      for (i = 0; i < list.length; i++) {
-        decl = (list[i] || "").trim();
-        if (!decl) continue;
+        <form class="converter-card" id="vwToPxForm" novalidate>
+          <div class="converter-card-head">
+            <div>
+              <span class="direction-label">VW TO PX</span>
+              <h3>VW → PX</h3>
+            </div>
+            <div class="unit-flow reverse" aria-hidden="true"><span>vw</span><svg><use href="#icon-arrow"></use></svg><span>px</span></div>
+          </div>
 
-        idx = decl.indexOf(":");
-        if (idx === -1) continue;
+          <div class="converter-body">
+            <div class="number-field">
+              <label for="vwInput">VW 값</label>
+              <div class="control-with-suffix large-control">
+                <input id="vwInput" type="number" step="any" inputmode="decimal" autocomplete="off" placeholder="예: 4.27">
+                <span class="control-suffix" aria-hidden="true">vw</span>
+              </div>
+            </div>
 
-        prop = decl.slice(0, idx).trim();
-        value = decl.slice(idx + 1).trim();
+            <div class="result-block">
+              <span class="result-label">변환 결과</span>
+              <div class="result-row">
+                <output id="pxOutput" for="vwInput viewportWidth" aria-live="polite">—</output>
+                <button class="result-copy" id="btnCopyPx" type="button" disabled aria-label="PX 결과 복사">
+                  <svg><use href="#icon-copy"></use></svg>
+                  <span>복사</span>
+                </button>
+              </div>
+              <p class="formula" id="vwFormula">VW ÷ 100 × 375</p>
+            </div>
+          </div>
 
-        if (/\b-?\d*\.?\d+px\b/i.test(value)) {
-          kept.push(prop + ":" + value);
-        }
-      }
+          <div class="card-actions">
+            <button class="button primary" type="submit">계산하기</button>
+            <button class="button ghost" id="btnClearVw" type="button">
+              <svg><use href="#icon-trash"></use></svg>
+              초기화
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
 
-      return kept.length ? (kept.join(";") + ";") : "";
-    }
+    <section class="panel css-panel" aria-labelledby="cssConverterTitle">
+      <div class="css-panel-head">
+        <div class="section-heading css-heading">
+          <div>
+            <p class="section-kicker">CSS WORKSPACE</p>
+            <h2 id="cssConverterTitle">CSS 소스 일괄 변환</h2>
+            <p class="section-description">주석, 따옴표 문자열, URL 내부 값은 건드리지 않고 실제 CSS 단위만 변환합니다.</p>
+          </div>
+        </div>
 
-    function removeEmptyCssBlocks(cssText) {
-      if (!cssText) return "";
+        <fieldset class="segment-control">
+          <legend class="sr-only">CSS 변환 방향</legend>
+          <input type="radio" name="cssDirection" id="directionPxVw" value="px-vw" checked>
+          <label for="directionPxVw"><strong>PX</strong><span>→</span><strong>VW</strong></label>
+          <input type="radio" name="cssDirection" id="directionVwPx" value="vw-px">
+          <label for="directionVwPx"><strong>VW</strong><span>→</span><strong>PX</strong></label>
+        </fieldset>
+      </div>
 
-      var out = cssText.replace(/[^{}]+\{\s*\}/g, "");
-      out = out.replace(/[ \t]+\n/g, "\n");
-      out = out.replace(/\n{3,}/g, "\n\n");
-      return out.trim();
-    }
+      <div class="option-bar">
+        <label class="check-control">
+          <input id="onlyMatchingDeclarations" type="checkbox" checked>
+          <span class="check-box" aria-hidden="true"></span>
+          <span>
+            <strong>대상 단위가 포함된 선언만 유지</strong>
+            <small>변환할 값이 없는 선언과 빈 규칙을 정리합니다.</small>
+          </span>
+        </label>
 
-    function keepOnlyPxInCssBlocks(cssText) {
-      if (!cssText) return "";
+        <label class="check-control">
+          <input id="stripZeroUnit" type="checkbox" checked>
+          <span class="check-box" aria-hidden="true"></span>
+          <span>
+            <strong>0 단위 정리</strong>
+            <small><code>0px</code>, <code>0vw</code>를 <code>0</code>으로 줄입니다.</small>
+          </span>
+        </label>
 
-      var out = cssText.replace(/\{[^}]*\}/g, function (block) {
-        var inner = block.slice(1, -1);
-        var cleaned = keepOnlyPxDeclarations(inner);
-        return "{" + cleaned + "}";
-      });
+        <label class="check-control">
+          <input id="autoConvert" type="checkbox" checked>
+          <span class="check-box" aria-hidden="true"></span>
+          <span>
+            <strong>자동 변환</strong>
+            <small>입력을 멈추면 결과를 자동 갱신합니다.</small>
+          </span>
+        </label>
+      </div>
 
-      out = removeEmptyCssBlocks(out);
-      return out;
-    }
+      <div class="editor-grid">
+        <article class="editor-pane" id="inputPane">
+          <header class="editor-head">
+            <div>
+              <span class="editor-label">INPUT</span>
+              <h3>CSS 소스</h3>
+            </div>
+            <div class="editor-tools">
+              <button class="tool-button" id="btnOpenFile" type="button">
+                <svg><use href="#icon-file"></use></svg>
+                파일 열기
+              </button>
+              <button class="tool-button" id="btnInsertSample" type="button">
+                <svg><use href="#icon-spark"></use></svg>
+                예제
+              </button>
+              <button class="tool-button" id="btnClearCss" type="button">
+                <svg><use href="#icon-trash"></use></svg>
+                지우기
+              </button>
+            </div>
+          </header>
+          <div class="editor-meta">
+            <span id="inputFileName">직접 입력</span>
+            <span id="inputCharCount">0자</span>
+          </div>
+          <textarea id="cssInput" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="변환할 CSS 소스" placeholder=".card {
+  width: 320px;
+  padding: 24px 16px;
+  border-radius: 12px;
+}"></textarea>
+          <input class="visually-hidden-file" id="cssFileInput" type="file" accept=".css,text/css">
+          <p class="drop-hint">CSS 파일을 이 영역에 끌어다 놓을 수도 있습니다. 최대 2MB</p>
+        </article>
 
-    function convertPxToVwInText(text, viewportWidth, precision) {
-      if (!text) return "";
+        <article class="editor-pane output-pane">
+          <header class="editor-head">
+            <div>
+              <span class="editor-label">OUTPUT</span>
+              <h3>변환 결과</h3>
+            </div>
+            <div class="editor-tools">
+              <button class="tool-button" id="btnCopyCss" type="button" disabled>
+                <svg><use href="#icon-copy"></use></svg>
+                복사
+              </button>
+              <button class="tool-button" id="btnDownloadCss" type="button" disabled>
+                <svg><use href="#icon-download"></use></svg>
+                저장
+              </button>
+            </div>
+          </header>
+          <div class="editor-meta">
+            <span id="outputDirection">PX → VW</span>
+            <span id="outputCharCount">0자</span>
+          </div>
+          <textarea id="cssOutput" readonly spellcheck="false" aria-label="변환된 CSS 결과" placeholder="변환 결과가 여기에 표시됩니다."></textarea>
+          <p class="drop-hint">결과는 서버로 전송되지 않으며 브라우저 안에서만 생성됩니다.</p>
+        </article>
+      </div>
 
-      return text.replace(/(-?\d*\.?\d+)px\b/g, function (all, num) {
-        var px = parseFloat(num);
-        if (isNaN(px)) return all;
+      <div class="workspace-footer">
+        <button class="button primary large-button" id="btnConvertCss" type="button">
+          <svg><use href="#icon-spark"></use></svg>
+          <span id="convertCssLabel">PX를 VW로 변환</span>
+        </button>
+        <div class="conversion-stats" id="conversionStats" aria-live="polite">
+          <span><strong id="convertedCount">0</strong>개 변환</span>
+          <span><strong id="removedCount">0</strong>개 선언 정리</span>
+          <span><strong id="outputSize">0 B</strong> 결과 크기</span>
+        </div>
+      </div>
+    </section>
 
-        var vw = (px / viewportWidth) * 100;
-        var s = formatNum(vw, precision);
+    <section class="info-strip" aria-label="도구 특징">
+      <div><strong>외부 라이브러리 0개</strong><span>별도 다운로드 없이 즉시 실행</span></div>
+      <div><strong>로컬 처리</strong><span>입력한 CSS를 서버로 전송하지 않음</span></div>
+      <div><strong>반응형·접근성 대응</strong><span>모바일, 키보드, 다크 모드 지원</span></div>
+    </section>
 
-        if (s.indexOf("-0") === 0) s = s.replace("-0", "0");
-        return s + "vw";
-      });
-    }
+    <footer class="site-footer">
+      <p>PX ↔ VW Converter</p>
+      <p>정확한 반응형 작업을 위한 가벼운 웹 도구</p>
+    </footer>
+  </main>
 
-    function onPxToVw() {
-      var vw = getViewportWidth();
-      if (!vw) { $("vwOutput").textContent = "-"; return; }
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
 
-      var p = getPrecision();
-      var px = toNumber($("pxInput").value);
-      if (px === null) { $("vwOutput").textContent = "-"; return; }
-
-      var out = formatNum((px / vw) * 100, p) + "vw";
-      if (out.indexOf("-0") === 0) out = out.replace("-0", "0");
-      $("vwOutput").textContent = out;
-    }
-
-    function onVwToPx() {
-      var vw = getViewportWidth();
-      if (!vw) { $("pxOutput").textContent = "-"; return; }
-
-      var p = getPrecision();
-      var val = toNumber($("vwInput").value);
-      if (val === null) { $("pxOutput").textContent = "-"; return; }
-
-      var out = formatNum((val / 100) * vw, p) + "px";
-      if (out.indexOf("-0") === 0) out = out.replace("-0", "0");
-      $("pxOutput").textContent = out;
-    }
-
-    function onConvertCss() {
-      var vw = getViewportWidth();
-      if (!vw) { $("cssOutput").value = ""; return; }
-
-      var p = getPrecision();
-      var src = $("cssInput").value || "";
-      var onlyPx = $("onlyPxProps").checked;
-
-      var cleaned = src;
-
-      if (onlyPx) {
-        if (cleaned.indexOf("{") !== -1 && cleaned.indexOf("}") !== -1) {
-          cleaned = keepOnlyPxInCssBlocks(cleaned);
-        } else {
-          cleaned = keepOnlyPxDeclarations(cleaned);
-        }
-      }
-
-      $("cssOutput").value = convertPxToVwInText(cleaned, vw, p);
-    }
-
-    function bind() {
-      $("btnPxToVw").addEventListener("click", onPxToVw);
-      $("btnVwToPx").addEventListener("click", onVwToPx);
-      $("btnConvertCss").addEventListener("click", onConvertCss);
-
-      $("btnCopyVw").addEventListener("click", function () { copyText($("vwOutput").textContent); });
-      $("btnCopyPx").addEventListener("click", function () { copyText($("pxOutput").textContent); });
-      $("btnCopyCss").addEventListener("click", function () { copyText($("cssOutput").value); });
-
-      $("btnClear1").addEventListener("click", function () { $("pxInput").value = ""; $("vwOutput").textContent = "-"; });
-      $("btnClear2").addEventListener("click", function () { $("vwInput").value = ""; $("pxOutput").textContent = "-"; });
-      $("btnClearCss").addEventListener("click", function () { $("cssInput").value = ""; $("cssOutput").value = ""; });
-
-      $("pxInput").addEventListener("input", onPxToVw);
-      $("vwInput").addEventListener("input", onVwToPx);
-    }
-
-    bind();
-  </script>
+  <noscript>
+    <div class="noscript-message">이 도구를 사용하려면 브라우저에서 JavaScript를 활성화해야 합니다.</div>
+  </noscript>
 </body>
 </html>
