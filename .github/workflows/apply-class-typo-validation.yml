@@ -1,0 +1,43 @@
+name: Apply class attribute typo validation
+
+on:
+  push:
+    branches:
+      - detect-class-attribute-typos
+    paths:
+      - .automation/apply-class-typo-validation.py
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    name: Apply, test, and commit validation changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: detect-class-attribute-typos
+
+      - name: Apply validation changes
+        run: python .automation/apply-class-typo-validation.py
+
+      - name: Verify JavaScript and regression tests
+        run: |
+          node --check converter-core.js
+          node --check app-ui.js
+          node --test tests/*.test.js
+
+      - name: Commit final changes
+        run: |
+          rm -f .automation/apply-class-typo-validation.py
+          rmdir .automation 2>/dev/null || true
+          rm -f .github/workflows/apply-class-typo-validation.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Detect common class attribute typos"
+          git push origin HEAD:detect-class-attribute-typos
