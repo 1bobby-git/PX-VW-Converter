@@ -9,6 +9,7 @@
   var STORAGE_KEY = "pxvw-converter-settings-v3";
   var MAX_FILE_SIZE = 2 * 1024 * 1024;
   var liveUpdateFrame = null;
+  var inputHighlightResizeObserver = null;
   var toastTimer = null;
   var currentFileName = "";
 
@@ -58,6 +59,8 @@
     directionVwPx: byId("directionVwPx"),
     onlyMatchingDeclarations: byId("onlyMatchingDeclarations"),
     stripZeroUnit: byId("stripZeroUnit"),
+    cssInputEditor: byId("cssInputEditor"),
+    cssInputHighlight: byId("cssInputHighlight"),
     cssInput: byId("cssInput"),
     cssOutput: byId("cssOutput"),
     inputPane: byId("inputPane"),
@@ -71,6 +74,7 @@
     convertCssLabel: byId("convertCssLabel"),
     inputFileName: byId("inputFileName"),
     inputCharCount: byId("inputCharCount"),
+    unconvertedLegend: byId("unconvertedLegend"),
     outputDirection: byId("outputDirection"),
     outputCharCount: byId("outputCharCount"),
     convertedCount: byId("convertedCount"),
@@ -168,6 +172,99 @@
     };
   }
 
+  function normalizeHighlightRanges(ranges, sourceLength) {
+    var candidates = [];
+    var normalized = [];
+
+    if (!Array.isArray(ranges)) {
+      return normalized;
+    }
+
+    ranges.forEach(function (range) {
+      var start = range ? Number(range.start) : NaN;
+      var end = range ? Number(range.end) : NaN;
+
+      if (!Number.isFinite(start) || !Number.isFinite(end)) {
+        return;
+      }
+
+      start = Math.max(0, Math.min(sourceLength, Math.floor(start)));
+      end = Math.max(0, Math.min(sourceLength, Math.ceil(end)));
+
+      if (end > start) {
+        candidates.push({ start: start, end: end });
+      }
+    });
+
+    candidates.sort(function (left, right) {
+      return left.start - right.start || left.end - right.end;
+    });
+
+    candidates.forEach(function (range) {
+      var previous = normalized[normalized.length - 1];
+
+      if (previous && range.start <= previous.end) {
+        previous.end = Math.max(previous.end, range.end);
+      } else {
+        normalized.push(range);
+      }
+    });
+
+    return normalized;
+  }
+
+  function syncInputHighlightGeometry() {
+    if (!elements.cssInput || !elements.cssInputHighlight) {
+      return;
+    }
+
+    var width = elements.cssInput.clientWidth;
+    var height = Math.max(elements.cssInput.scrollHeight, elements.cssInput.clientHeight);
+
+    elements.cssInputHighlight.style.width = width + "px";
+    elements.cssInputHighlight.style.height = height + "px";
+    elements.cssInputHighlight.style.transform = "translate3d(" +
+      (-elements.cssInput.scrollLeft) + "px, " +
+      (-elements.cssInput.scrollTop) + "px, 0)";
+  }
+
+  function renderInputHighlight(source, ranges) {
+    var text = typeof source === "string" ? source : "";
+    var normalized = normalizeHighlightRanges(ranges, text.length);
+    var fragment = document.createDocumentFragment();
+    var cursor = 0;
+
+    normalized.forEach(function (range) {
+      if (range.start > cursor) {
+        fragment.appendChild(document.createTextNode(text.slice(cursor, range.start)));
+      }
+
+      var highlight = document.createElement("span");
+      highlight.className = "is-unconverted";
+      highlight.textContent = text.slice(range.start, range.end);
+      fragment.appendChild(highlight);
+      cursor = range.end;
+    });
+
+    if (cursor < text.length) {
+      fragment.appendChild(document.createTextNode(text.slice(cursor)));
+    }
+
+    if (text && /(?:\r\n|\r|\n)$/.test(text)) {
+      var sentinel = document.createElement("span");
+      sentinel.className = "editor-highlight-sentinel";
+      sentinel.textContent = "\u200b";
+      fragment.appendChild(sentinel);
+    }
+
+    elements.cssInputHighlight.textContent = "";
+    elements.cssInputHighlight.appendChild(fragment);
+    elements.cssInputEditor.classList.add("is-highlight-ready");
+    elements.unconvertedLegend.hidden = normalized.length === 0;
+    elements.unconvertedLegend.textContent = normalized.length + "개 출력 제외";
+    syncInputHighlightGeometry();
+  }
+
   function updateWorkspaceMeta(resultStats) {
     var inputText = elements.cssInput.value || "";
     var outputText = elements.cssOutput.value || "";
@@ -186,6 +283,13 @@
     var viewport = getViewportWidth(Boolean(showViewportError));
     var config = getDirectionConfig();
     var precision = getPrecision();
+    var filtered = null;
+
+    if (source.trim() && elements.onlyMatchingDeclarations.checked) {
+      filtered = core.filterMatchingDeclarations(source, config.sourceUnit);
+    }
+
+    renderInputHighlight(source, filtered ? filtered.removedRanges : []);
 
     if (!source.trim() || !viewport) {
       elements.cssOutput.value = "";
@@ -193,14 +297,8 @@
       return;
     }
 
-    var preparedSource = source;
-    var removedDeclarations = 0;
-
-    if (elements.onlyMatchingDeclarations.checked) {
-      var filtered = core.filterMatchingDeclarations(source, config.sourceUnit);
-      preparedSource = filtered.text;
-      removedDeclarations = filtered.stats.removedDeclarations;
-    }
+    var preparedSource = filtered ? filtered.text : source;
+    var removedDeclarations = filtered ? filtered.stats.removedDeclarations : 0;
 
     var converted = core.scanAndTransformUnits(
       preparedSource,
@@ -653,6 +751,7 @@
     elements.cssFileInput.value = "";
     currentFileName = "";
     elements.inputFileName.textContent = "직접 입력";
+    renderInputHighlight("", []);
     updateWorkspaceMeta(null);
     validateCss();
     elements.cssInput.focus();
@@ -738,6 +837,7 @@
     var textBefore = elements.cssInput.value.slice(0, offset);
     var line = textBefore.split("\n").length - 1;
     elements.cssInput.scrollTop = Math.max(0, line * lineHeight - elements.cssInput.clientHeight / 3);
+    syncInputHighlightGeometry();
   }
 
   function bindEvents() {
@@ -803,6 +903,14 @@
     });
 
     elements.cssInput.addEventListener("input", scheduleLivePipeline);
+    elements.cssInput.addEventListener("scroll", syncInputHighlightGeometry);
+    elements.cssInput.addEventListener("compositionstart", function () {
+      elements.cssInputEditor.classList.add("is-composing");
+    });
+    elements.cssInput.addEventListener("compositionend", function () {
+      elements.cssInputEditor.classList.remove("is-composing");
+      scheduleLivePipeline();
+    });
     elements.cssInput.addEventListener("keydown", function (event) {
       if (event.key === "Tab") {
         event.preventDefault();
@@ -855,6 +963,7 @@
     });
     elements.inputPane.addEventListener("drop", handleDrop);
 
+    window.addEventListener("resize", syncInputHighlightGeometry);
     window.addEventListener("keydown", function (event) {
       if ((event.ctrlKey || event.metaKey) && event.key === "Enter" && document.activeElement === elements.cssInput) {
         event.preventDefault();
@@ -869,8 +978,14 @@
     updatePresetState();
     updateSingleConversions(false);
     updateWorkspaceMeta(null);
+    renderInputHighlight(elements.cssInput.value || "", []);
     validateCss();
     bindEvents();
+
+    if (window.ResizeObserver) {
+      inputHighlightResizeObserver = new window.ResizeObserver(syncInputHighlightGeometry);
+      inputHighlightResizeObserver.observe(elements.cssInput);
+    }
   }
 
   initialize();

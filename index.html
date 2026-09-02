@@ -290,13 +290,19 @@
           </header>
           <div class="editor-meta">
             <span id="inputFileName">직접 입력</span>
-            <span id="inputCharCount">0자</span>
+            <span class="editor-meta-details">
+              <span class="unconverted-legend" id="unconvertedLegend" hidden>0개 출력 제외</span>
+              <span id="inputCharCount">0자</span>
+            </span>
           </div>
-          <textarea id="cssInput" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="변환하고 검사할 CSS 소스" aria-describedby="validationSummary validationCount" placeholder=".card {
+          <div class="code-editor" id="cssInputEditor">
+            <pre class="code-editor-highlight" id="cssInputHighlight" aria-hidden="true"></pre>
+            <textarea id="cssInput" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="변환하고 검사할 CSS 소스" aria-describedby="unconvertedLegend validationSummary validationCount" placeholder=".card {
   width: 320px;
   padding: 24px 16px;
   border-radius: 12px;
 }"></textarea>
+          </div>
           <div class="validation-panel" id="cssValidation" data-state="empty" role="status" aria-live="polite" aria-atomic="false">
             <div class="validation-head">
               <span class="validation-dot" aria-hidden="true"></span>

@@ -368,11 +368,29 @@
     return match ? match[0] : "";
   }
 
-  function filterContainer(text, sourceUnit, context) {
+  function trailingContentEnd(text) {
+    var match = text.match(/\s*$/);
+    return match ? text.length - match[0].length : text.length;
+  }
+
+  function addRemovedRange(ranges, baseOffset, start, end) {
+    if (end <= start) {
+      return;
+    }
+
+    ranges.push({
+      start: baseOffset + start,
+      end: baseOffset + end
+    });
+  }
+
+  function filterContainer(text, sourceUnit, context, baseOffset) {
     var cursor = 0;
     var output = "";
     var keptContent = false;
     var stats = createFilterStats();
+    var removedRanges = [];
+    var absoluteBase = Number.isFinite(baseOffset) ? baseOffset : 0;
 
     while (cursor < text.length) {
       var token = findNextTopLevelToken(text, cursor);
@@ -396,6 +414,12 @@
             keptContent = true;
           } else {
             stats.removedDeclarations += 1;
+            addRemovedRange(
+              removedRanges,
+              absoluteBase,
+              cursor + meaningfulIndex,
+              cursor + trailingContentEnd(trailing)
+            );
             if (keptContent) {
               output += trailingWhitespace(trailing);
             }
@@ -408,10 +432,12 @@
       }
 
       if (token.token === ";") {
+        var statementStart = cursor;
         var statement = text.slice(cursor, token.index + 1);
+        var statementMeaningfulIndex = firstMeaningfulIndex(statement);
         cursor = token.index + 1;
 
-        if (firstMeaningfulIndex(statement) === -1) {
+        if (statementMeaningfulIndex === -1) {
           if (keptContent) {
             output += statement;
           }
@@ -431,6 +457,12 @@
           keptContent = true;
         } else {
           stats.removedDeclarations += 1;
+          addRemovedRange(
+            removedRanges,
+            absoluteBase,
+            statementStart + statementMeaningfulIndex,
+            token.index + 1
+          );
         }
         continue;
       }
@@ -449,9 +481,12 @@
       var prelude = text.slice(cursor, token.index);
       var body = text.slice(token.index + 1, closeIndex);
       var childContext = isGroupingAtRule(prelude, body) ? "stylesheet" : "rule";
-      var childResult = filterContainer(body, sourceUnit, childContext);
+      var childResult = filterContainer(body, sourceUnit, childContext, absoluteBase + token.index + 1);
 
       mergeFilterStats(stats, childResult.stats);
+      childResult.removedRanges.forEach(function (range) {
+        removedRanges.push(range);
+      });
 
       if (childResult.kept) {
         output += prelude + "{" + childResult.text + "}";
@@ -466,17 +501,19 @@
     return {
       text: output,
       stats: stats,
-      kept: keptContent
+      kept: keptContent,
+      removedRanges: removedRanges
     };
   }
 
   function filterMatchingDeclarations(text, sourceUnit) {
     var context = hasTopLevelBlock(text) ? "stylesheet" : "rule";
-    var result = filterContainer(text, sourceUnit, context);
+    var result = filterContainer(text, sourceUnit, context, 0);
 
     return {
       text: result.text,
-      stats: result.stats
+      stats: result.stats,
+      removedRanges: result.removedRanges
     };
   }
 
