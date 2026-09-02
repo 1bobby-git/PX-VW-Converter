@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="description" content="PX와 VW를 실시간 계산하고 CSS 문법 오류를 검사하며 소스 단위를 안전하게 일괄 변환하는 무료 브라우저 도구입니다.">
-  <meta name="theme-color" content="#f4f7fb">
+  <meta name="theme-color" content="#f4f5f7">
   <meta name="color-scheme" content="light">
   <meta property="og:type" content="website">
   <meta property="og:title" content="PX ↔ VW Converter">
@@ -13,9 +13,12 @@
   <link rel="canonical" href="https://1bobby-git.github.io/PX-VW-Converter/">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%234f46e5'/%3E%3Cpath d='M14 20h13c7 0 11 4 11 10s-4 10-11 10h-5v7h-8V20Zm8 6v8h4c3 0 4-1 4-4s-1-4-4-4h-4Zm18-6h8l4 16 4-16h8l-8 27h-8l-8-27Z' fill='white'/%3E%3C/svg%3E">
   <title>PX ↔ VW Converter | CSS 문법 검사·단위 변환기</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
   <link rel="stylesheet" href="./styles-1.css">
   <link rel="stylesheet" href="./styles-2.css">
   <link rel="stylesheet" href="./styles-3.css">
+  <link rel="stylesheet" href="./styles-4.css">
   <script src="./converter-core.js" defer></script>
   <script src="./app-ui.js" defer></script>
 </head>
@@ -288,6 +291,19 @@
               </button>
             </div>
           </header>
+          <div class="editor-viewport-bar" data-editor-viewport-group="input" aria-label="INPUT 빠른 뷰포트 선택">
+            <span class="editor-viewport-label">빠른 뷰포트</span>
+            <div class="editor-viewport-list">
+              <button class="editor-viewport-chip" type="button" data-editor-viewport="320" aria-pressed="true">320</button>
+              <button class="editor-viewport-chip" type="button" data-editor-viewport="360" aria-pressed="false">360</button>
+              <button class="editor-viewport-chip" type="button" data-editor-viewport="800" aria-pressed="false">800</button>
+              <button class="editor-viewport-chip" type="button" data-editor-viewport="801" aria-pressed="false">801</button>
+              <button class="editor-viewport-chip" type="button" data-editor-viewport="1100" aria-pressed="false">1100</button>
+              <button class="editor-viewport-chip" type="button" data-editor-viewport="1440" aria-pressed="false">1440</button>
+              <button class="editor-viewport-chip" type="button" data-editor-viewport="1920" aria-pressed="false">1920</button>
+            </div>
+            <span class="editor-viewport-current" data-editor-viewport-current>현재 320px</span>
+          </div>
           <div class="editor-meta">
             <span id="inputFileName">직접 입력</span>
             <span class="editor-meta-details">
@@ -334,6 +350,19 @@
               </button>
             </div>
           </header>
+          <div class="editor-viewport-bar" data-editor-viewport-group="output" aria-label="OUTPUT 빠른 뷰포트 선택">
+            <span class="editor-viewport-label">빠른 뷰포트</span>
+            <div class="editor-viewport-list">
+              <button class="editor-viewport-chip" type="button" data-editor-viewport="320" aria-pressed="true">320</button>
+              <button class="editor-viewport-chip" type="button" data-editor-viewport="360" aria-pressed="false">360</button>
+              <button class="editor-viewport-chip" type="button" data-editor-viewport="800" aria-pressed="false">800</button>
+              <button class="editor-viewport-chip" type="button" data-editor-viewport="801" aria-pressed="false">801</button>
+              <button class="editor-viewport-chip" type="button" data-editor-viewport="1100" aria-pressed="false">1100</button>
+              <button class="editor-viewport-chip" type="button" data-editor-viewport="1440" aria-pressed="false">1440</button>
+              <button class="editor-viewport-chip" type="button" data-editor-viewport="1920" aria-pressed="false">1920</button>
+            </div>
+            <span class="editor-viewport-current" data-editor-viewport-current>현재 320px</span>
+          </div>
           <div class="editor-meta">
             <span id="outputDirection">PX → VW</span>
             <span id="outputCharCount">0자</span>

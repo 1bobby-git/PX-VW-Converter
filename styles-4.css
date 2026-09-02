@@ -1,0 +1,499 @@
+:root {
+  --page-bg: #f4f5f7;
+  --page-glow: transparent;
+  --surface: #ffffff;
+  --surface-solid: #ffffff;
+  --surface-soft: #f7f8fa;
+  --surface-hover: #eef1f4;
+  --text: #171a1f;
+  --text-soft: #30353d;
+  --muted: #747c87;
+  --muted-strong: #59616c;
+  --line: #dde1e6;
+  --line-strong: #cbd1d8;
+  --primary: #4b56c6;
+  --primary-hover: #3c47b5;
+  --primary-soft: #f0f2ff;
+  --primary-line: #cfd4ff;
+  --focus: rgba(75, 86, 198, 0.17);
+  --shadow-sm: 0 1px 2px rgba(17, 24, 39, 0.035);
+  --shadow-md: 0 2px 8px rgba(17, 24, 39, 0.05);
+  --radius-sm: 6px;
+  --radius-md: 9px;
+  --radius-lg: 12px;
+}
+
+html,
+body {
+  background: var(--page-bg);
+}
+
+body {
+  font-family: "SUIT Variable", "SUIT", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.012em;
+  font-synthesis: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+h1,
+h2,
+h3,
+strong {
+  font-weight: 650;
+}
+
+.hero h1,
+.section-heading h2,
+.converter-card-head h3,
+.editor-head h3 {
+  font-weight: 680;
+  letter-spacing: -0.028em;
+}
+
+.eyebrow,
+.section-kicker,
+.direction-label,
+.editor-label {
+  font-weight: 700;
+  letter-spacing: 0.09em;
+}
+
+.button,
+.tool-button,
+.result-copy,
+.preset-chip,
+.segment-control label,
+.check-control strong,
+.realtime-control strong {
+  font-weight: 620;
+}
+
+.result-row output {
+  font-weight: 700;
+}
+
+.panel,
+.converter-card {
+  border-color: var(--line);
+  background: var(--surface-solid);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.panel,
+.settings-panel,
+.css-panel,
+.converter-card {
+  border-radius: var(--radius-lg);
+}
+
+.brand-mark {
+  border-color: var(--primary);
+  border-radius: 10px;
+  background: var(--primary);
+  box-shadow: none;
+  font-weight: 680;
+}
+
+body,
+.brand-mark,
+.button.primary,
+.button.primary:hover,
+.result-block,
+.output-pane {
+  background-image: none;
+}
+
+.icon-button,
+.local-badge,
+.live-badge,
+.info-strip {
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.status-dot,
+.realtime-icon,
+.validation-dot,
+.unconverted-legend::before {
+  box-shadow: none;
+}
+
+.icon-button,
+.local-badge,
+.live-badge {
+  border-radius: 8px;
+}
+
+.converter-card:focus-within {
+  box-shadow: 0 0 0 3px var(--focus);
+  transform: none;
+}
+
+.button.primary {
+  background: var(--primary);
+  box-shadow: none;
+}
+
+.button.primary:hover {
+  background: var(--primary-hover);
+  box-shadow: none;
+  transform: none;
+}
+
+.icon-button:hover,
+.preset-chip:hover {
+  transform: none;
+}
+
+.result-block {
+  border-color: var(--primary-line);
+  border-radius: 8px;
+  background: var(--primary-soft);
+}
+
+.control-with-suffix input,
+.select-wrap select,
+.preset-chip,
+.segment-control,
+.segment-control label,
+.option-bar,
+.check-control,
+.realtime-control,
+.button,
+.tool-button,
+.result-copy,
+.conversion-stats span,
+.cursor-position {
+  border-radius: 8px;
+}
+
+.check-box,
+.realtime-icon,
+.validation-severity,
+.validation-location {
+  border-radius: 5px;
+}
+
+.segment-control input:checked + label,
+.preset-chip[aria-pressed="true"] {
+  box-shadow: none;
+}
+
+.css-panel {
+  padding: clamp(18px, 1.8vw, 28px);
+}
+
+.editor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  margin-top: 14px;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--line-strong);
+}
+
+.editor-pane {
+  padding: clamp(15px, 1.2vw, 20px);
+  border: 0;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+  transform: none;
+}
+
+.editor-pane + .editor-pane {
+  border-top: 1px solid var(--line-strong);
+}
+
+.editor-pane:focus-within,
+.editor-pane.is-dragover {
+  border-color: transparent;
+  box-shadow: inset 3px 0 0 var(--primary);
+  transform: none;
+}
+
+.editor-pane.has-syntax-error {
+  border-color: transparent;
+  box-shadow: inset 3px 0 0 var(--danger);
+}
+
+.editor-pane.has-syntax-warning {
+  border-color: transparent;
+  box-shadow: inset 3px 0 0 var(--warning);
+}
+
+#inputPane {
+  border-color: transparent;
+}
+
+.output-pane {
+  border-color: transparent;
+  background: #fbfcfe;
+}
+
+.output-pane .editor-label {
+  color: #08766a;
+}
+
+.editor-pane .editor-head {
+  min-height: 42px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.editor-head h3 {
+  font-size: 17px;
+}
+
+.editor-tools {
+  gap: 5px;
+}
+
+.tool-button {
+  min-height: 32px;
+  border-color: var(--line);
+  background: #ffffff;
+}
+
+.tool-button:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.editor-viewport-bar {
+  display: flex;
+  min-width: 0;
+  min-height: 38px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 9px;
+  padding: 5px 7px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fafbfc;
+}
+
+.editor-viewport-label {
+  flex: 0 0 auto;
+  color: var(--muted-strong);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.015em;
+  white-space: nowrap;
+}
+
+.editor-viewport-list {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 3px;
+  overflow-x: auto;
+  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-width: thin;
+}
+
+.editor-viewport-chip {
+  flex: 0 0 auto;
+  height: 27px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: var(--muted-strong);
+  background: transparent;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.editor-viewport-chip:hover {
+  border-color: var(--line-strong);
+  color: var(--text);
+  background: #ffffff;
+}
+
+.editor-viewport-chip:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.editor-viewport-chip[aria-pressed="true"] {
+  border-color: var(--primary-line);
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.editor-viewport-current {
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 0 3px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 550;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.editor-meta {
+  min-height: 22px;
+  margin: 8px 2px 6px;
+  font-size: 10px;
+}
+
+.editor-meta,
+.result-row output,
+.preset-chip,
+.conversion-stats,
+.cursor-position {
+  font-variant-numeric: tabular-nums;
+}
+
+textarea,
+.code-editor {
+  min-height: clamp(290px, 34vh, 440px);
+  border-radius: 7px;
+}
+
+textarea {
+  padding: 16px 18px;
+  border-color: var(--line-strong);
+  color: #242a33;
+  background: #fbfcfd;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.65;
+}
+
+textarea[readonly] {
+  color: #242a33;
+  background: #f8fafc;
+}
+
+.code-editor {
+  border-color: var(--line-strong);
+  background: #fbfcfd;
+}
+
+.code-editor-highlight {
+  padding: 16px 18px;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.65;
+}
+
+.code-editor:focus-within {
+  box-shadow: 0 0 0 2px var(--focus);
+}
+
+.validation-panel {
+  margin-top: 7px;
+  border-radius: 7px;
+}
+
+.validation-head {
+  min-height: 40px;
+  padding: 7px 10px;
+}
+
+.validation-head strong {
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.validation-list {
+  max-height: 150px;
+}
+
+.validation-issue {
+  padding: 8px 10px;
+}
+
+.workspace-footer {
+  margin-top: 12px;
+}
+
+.info-strip {
+  border-radius: 10px;
+}
+
+.toast {
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(17, 24, 39, 0.14);
+}
+
+@media (max-width: 800px) {
+  .app-shell {
+    width: 100%;
+    padding: 22px 14px 36px;
+  }
+
+  .settings-panel,
+  .converter-card,
+  .css-panel {
+    border-radius: 10px;
+  }
+
+  textarea,
+  .code-editor {
+    min-height: 280px;
+  }
+}
+
+@media (max-width: 620px) {
+  .editor-viewport-bar {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .editor-viewport-list {
+    order: 3;
+    width: 100%;
+    padding-bottom: 2px;
+  }
+
+  .editor-viewport-current {
+    margin-left: auto;
+  }
+
+  .editor-meta {
+    align-items: flex-start;
+  }
+
+  .editor-meta-details {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 390px) {
+  .app-shell {
+    padding-inline: 10px;
+  }
+
+  .settings-panel,
+  .converter-card,
+  .css-panel {
+    padding: 14px;
+    border-radius: 9px;
+  }
+
+  textarea,
+  .code-editor {
+    min-height: 250px;
+  }
+
+  textarea,
+  .code-editor-highlight {
+    padding: 13px 14px;
+    font-size: 13px;
+  }
+}
