@@ -140,9 +140,10 @@ code {
 }
 
 .app-shell {
-  width: min(100% - 32px, 1240px);
-  margin: 0 auto;
-  padding: 36px 0 48px;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 32px clamp(18px, 2.4vw, 44px) 48px;
 }
 
 .hero {

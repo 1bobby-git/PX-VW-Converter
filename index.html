@@ -291,24 +291,25 @@
           <div class="editor-meta">
             <span id="inputFileName">직접 입력</span>
             <span class="editor-meta-details">
+              <span class="cursor-position" id="cursorPosition">1행 1열</span>
               <span class="unconverted-legend" id="unconvertedLegend" hidden>0개 출력 제외</span>
               <span id="inputCharCount">0자</span>
             </span>
           </div>
           <div class="code-editor" id="cssInputEditor">
             <pre class="code-editor-highlight" id="cssInputHighlight" aria-hidden="true"></pre>
-            <textarea id="cssInput" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="변환하고 검사할 CSS 소스" aria-describedby="unconvertedLegend validationSummary validationCount" placeholder=".card {
+            <textarea id="cssInput" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="변환하고 검사할 CSS 소스" aria-describedby="cursorPosition unconvertedLegend validationSummary validationCount" placeholder=".card {
   width: 320px;
   padding: 24px 16px;
   border-radius: 12px;
 }"></textarea>
           </div>
           <div class="validation-panel" id="cssValidation" data-state="empty" role="status" aria-live="polite" aria-atomic="false">
-            <div class="validation-head">
+            <button class="validation-head validation-jump" id="validationJump" type="button" disabled aria-label="CSS 검사 결과">
               <span class="validation-dot" aria-hidden="true"></span>
               <strong id="validationSummary">CSS 입력 대기</strong>
               <span id="validationCount">입력과 동시에 문법을 검사합니다.</span>
-            </div>
+            </button>
             <ol class="validation-list" id="validationList" hidden></ol>
             <p class="validation-more" id="validationMore" hidden></p>
           </div>
@@ -337,7 +338,7 @@
             <span id="outputDirection">PX → VW</span>
             <span id="outputCharCount">0자</span>
           </div>
-          <textarea id="cssOutput" readonly spellcheck="false" aria-label="실시간으로 변환된 CSS 결과" placeholder="입력과 동시에 변환 결과가 표시됩니다."></textarea>
+          <textarea id="cssOutput" wrap="off" readonly spellcheck="false" aria-label="실시간으로 변환된 CSS 결과" placeholder="입력과 동시에 변환 결과가 표시됩니다."></textarea>
           <p class="drop-hint">결과는 서버로 전송되지 않으며 브라우저 안에서만 생성됩니다.</p>
         </article>
       </div>

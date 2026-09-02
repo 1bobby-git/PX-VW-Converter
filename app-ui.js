@@ -74,6 +74,7 @@
     convertCssLabel: byId("convertCssLabel"),
     inputFileName: byId("inputFileName"),
     inputCharCount: byId("inputCharCount"),
+    cursorPosition: byId("cursorPosition"),
     unconvertedLegend: byId("unconvertedLegend"),
     outputDirection: byId("outputDirection"),
     outputCharCount: byId("outputCharCount"),
@@ -81,6 +82,7 @@
     removedCount: byId("removedCount"),
     outputSize: byId("outputSize"),
     validationPanel: byId("cssValidation"),
+    validationJump: byId("validationJump"),
     validationSummary: byId("validationSummary"),
     validationCount: byId("validationCount"),
     validationList: byId("validationList"),
@@ -218,7 +220,7 @@
       return;
     }
 
-    var width = elements.cssInput.clientWidth;
+    var width = Math.max(elements.cssInput.scrollWidth, elements.cssInput.clientWidth);
     var height = Math.max(elements.cssInput.scrollHeight, elements.cssInput.clientHeight);
 
     elements.cssInputHighlight.style.width = width + "px";
@@ -263,6 +265,22 @@
     elements.unconvertedLegend.hidden = normalized.length === 0;
     elements.unconvertedLegend.textContent = normalized.length + "개 출력 제외";
     syncInputHighlightGeometry();
+  }
+
+  function updateCursorPosition() {
+    if (!elements.cssInput || !elements.cursorPosition) {
+      return;
+    }
+
+    var source = elements.cssInput.value || "";
+    var offset = Math.max(0, Math.min(source.length, Number(elements.cssInput.selectionStart) || 0));
+    var before = source.slice(0, offset);
+    var line = before.split("\n").length;
+    var lineStart = before.lastIndexOf("\n") + 1;
+    var columnText = before.slice(lineStart).replace(/\t/g, "  ");
+    var column = columnText.length + 1;
+
+    elements.cursorPosition.textContent = line + "행 " + column + "열";
   }
 
   function updateWorkspaceMeta(resultStats) {
@@ -509,6 +527,16 @@
   function renderValidation(result) {
     var source = elements.cssInput.value || "";
     var state = "valid";
+    var primaryIssue = null;
+    var targetSeverity = result.errors > 0 ? "error" : result.warnings > 0 ? "warning" : "";
+    var issueIndex;
+
+    for (issueIndex = 0; issueIndex < result.issues.length; issueIndex += 1) {
+      if (result.issues[issueIndex].severity === targetSeverity) {
+        primaryIssue = result.issues[issueIndex];
+        break;
+      }
+    }
 
     if (!source.trim()) {
       state = "empty";
@@ -518,17 +546,36 @@
     } else if (result.errors > 0) {
       state = "error";
       elements.validationSummary.textContent = "CSS 문법 오류 " + result.errors + "개";
-      elements.validationCount.textContent = result.warnings > 0 ? "경고 " + result.warnings + "개 포함" : "오류 위치를 선택해 확인하세요.";
+      elements.validationCount.textContent = result.warnings > 0
+        ? "경고 " + result.warnings + "개 포함 · 클릭하면 첫 오류로 이동합니다."
+        : "클릭하면 첫 오류 위치로 이동합니다.";
       elements.realtimeStatus.textContent = "문법 오류 " + result.errors + "개";
     } else if (result.warnings > 0) {
       state = "warning";
       elements.validationSummary.textContent = "확인할 항목 " + result.warnings + "개";
-      elements.validationCount.textContent = "브라우저 인식 여부와 오타 가능성을 확인하세요.";
+      elements.validationCount.textContent = "클릭하면 첫 경고 위치로 이동합니다.";
       elements.realtimeStatus.textContent = "경고 " + result.warnings + "개";
     } else {
       elements.validationSummary.textContent = "CSS 문법 정상";
       elements.validationCount.textContent = "구조와 선언에서 오류를 찾지 못했습니다.";
       elements.realtimeStatus.textContent = "실시간 변환·검증 중";
+    }
+
+    elements.validationJump.disabled = !primaryIssue;
+    if (primaryIssue) {
+      elements.validationJump.dataset.offset = String(primaryIssue.offset);
+      elements.validationJump.dataset.length = String(primaryIssue.length);
+      elements.validationJump.setAttribute(
+        "aria-label",
+        primaryIssue.line + "행 " + primaryIssue.column + "열의 첫 " +
+          (primaryIssue.severity === "error" ? "오류" : "경고") + "로 이동: " + primaryIssue.message
+      );
+      elements.validationJump.title = "첫 " + (primaryIssue.severity === "error" ? "오류" : "경고") + " 위치로 이동";
+    } else {
+      delete elements.validationJump.dataset.offset;
+      delete elements.validationJump.dataset.length;
+      elements.validationJump.setAttribute("aria-label", "CSS 검사 결과");
+      elements.validationJump.removeAttribute("title");
     }
 
     elements.validationPanel.dataset.state = state;
@@ -589,12 +636,14 @@
 
   function runLivePipeline(showViewportError) {
     cancelLivePipeline();
+    updateCursorPosition();
     validateCss();
     convertCss(Boolean(showViewportError));
   }
 
   function scheduleLivePipeline() {
     cancelLivePipeline();
+    updateCursorPosition();
     updateWorkspaceMeta(null);
     liveUpdateFrame = window.requestAnimationFrame(function () {
       liveUpdateFrame = null;
@@ -752,6 +801,7 @@
     currentFileName = "";
     elements.inputFileName.textContent = "직접 입력";
     renderInputHighlight("", []);
+    updateCursorPosition();
     updateWorkspaceMeta(null);
     validateCss();
     elements.cssInput.focus();
@@ -831,12 +881,20 @@
   function focusValidationIssue(button) {
     var offset = Number(button.dataset.offset) || 0;
     var length = Number(button.dataset.length) || 1;
-    elements.cssInput.focus();
-    elements.cssInput.setSelectionRange(offset, Math.min(elements.cssInput.value.length, offset + length));
-    var lineHeight = parseFloat(window.getComputedStyle(elements.cssInput).lineHeight) || 22;
+    var computedStyle = window.getComputedStyle(elements.cssInput);
+    var lineHeight = parseFloat(computedStyle.lineHeight) || 24;
+    var fontSize = parseFloat(computedStyle.fontSize) || 14;
     var textBefore = elements.cssInput.value.slice(0, offset);
     var line = textBefore.split("\n").length - 1;
+    var lineStart = textBefore.lastIndexOf("\n") + 1;
+    var columnText = textBefore.slice(lineStart).replace(/\t/g, "  ");
+    var characterWidth = fontSize * 0.62;
+
+    elements.cssInput.focus();
+    elements.cssInput.setSelectionRange(offset, Math.min(elements.cssInput.value.length, offset + length));
     elements.cssInput.scrollTop = Math.max(0, line * lineHeight - elements.cssInput.clientHeight / 3);
+    elements.cssInput.scrollLeft = Math.max(0, columnText.length * characterWidth - elements.cssInput.clientWidth / 3);
+    updateCursorPosition();
     syncInputHighlightGeometry();
   }
 
@@ -903,6 +961,9 @@
     });
 
     elements.cssInput.addEventListener("input", scheduleLivePipeline);
+    ["click", "keyup", "select"].forEach(function (eventName) {
+      elements.cssInput.addEventListener(eventName, updateCursorPosition);
+    });
     elements.cssInput.addEventListener("scroll", syncInputHighlightGeometry);
     elements.cssInput.addEventListener("compositionstart", function () {
       elements.cssInputEditor.classList.add("is-composing");
@@ -918,6 +979,12 @@
         var end = elements.cssInput.selectionEnd;
         elements.cssInput.setRangeText("  ", start, end, "end");
         elements.cssInput.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    });
+
+    elements.validationJump.addEventListener("click", function () {
+      if (!elements.validationJump.disabled) {
+        focusValidationIssue(elements.validationJump);
       }
     });
 
@@ -978,6 +1045,7 @@
     updatePresetState();
     updateSingleConversions(false);
     updateWorkspaceMeta(null);
+    updateCursorPosition();
     renderInputHighlight(elements.cssInput.value || "", []);
     validateCss();
     bindEvents();

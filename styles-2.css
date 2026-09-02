@@ -427,19 +427,20 @@
 
 .editor-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   align-items: stretch;
-  gap: 14px;
-  margin-top: 14px;
+  gap: 22px;
+  margin-top: 18px;
 }
 
 .editor-pane {
   display: flex;
   min-width: 0;
-  padding: 16px;
+  padding: clamp(16px, 1.3vw, 24px);
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 20px;
   background: var(--surface-solid);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.055);
   flex-direction: column;
   transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
 }
@@ -454,6 +455,11 @@
   transform: scale(1.005);
 }
 
+.editor-pane .editor-head {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
 .editor-pane.has-syntax-error {
   border-color: var(--danger-line);
 }
@@ -462,8 +468,13 @@
   border-color: var(--warning-line);
 }
 
+#inputPane {
+  border-color: #d6deeb;
+}
+
 .output-pane {
-  background: linear-gradient(180deg, #ffffff, #fafbff);
+  border-color: #cfd9ec;
+  background: linear-gradient(180deg, #ffffff 0%, #f7f9ff 100%);
 }
 
 .editor-head h3 {
@@ -500,11 +511,12 @@
 
 .editor-meta {
   display: flex;
+  min-height: 24px;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin: 12px 1px 6px;
+  gap: 12px;
+  margin: 10px 2px 8px;
   color: var(--muted);
   font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 10px;
+  font-size: 11px;
 }

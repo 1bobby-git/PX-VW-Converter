@@ -1,8 +1,9 @@
 textarea {
   display: block;
   width: 100%;
-  min-height: 370px;
-  padding: 15px;
+  min-height: clamp(400px, 44vh, 640px);
+  padding: 18px 20px;
+  overflow: auto;
   resize: vertical;
   border: 1px solid var(--line);
   border-radius: 13px;
@@ -10,9 +11,16 @@ textarea {
   color: var(--text-soft);
   background: var(--surface-soft);
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  font-size: 13px;
-  line-height: 1.7;
+  font-size: 14px;
+  font-variant-ligatures: none;
+  line-height: 1.75;
   tab-size: 2;
+  white-space: pre;
+  overflow-wrap: normal;
+  word-break: normal;
+  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
   flex: 1 1 auto;
   transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
 }
@@ -33,7 +41,7 @@ textarea[aria-invalid="true"] {
 
 .code-editor {
   position: relative;
-  min-height: 370px;
+  min-height: clamp(400px, 44vh, 640px);
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 13px;
@@ -51,8 +59,8 @@ textarea[aria-invalid="true"] {
   color: var(--text-soft);
   background: transparent;
   box-shadow: none;
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
+  white-space: pre;
+  overflow-wrap: normal;
   word-break: normal;
 }
 
@@ -79,18 +87,21 @@ textarea[aria-invalid="true"] {
   z-index: 1;
   top: 0;
   left: 0;
+  min-width: 100%;
   min-height: 100%;
   margin: 0;
-  padding: 15px;
+  padding: 18px 20px;
   overflow: hidden;
   color: var(--text-soft);
   background: transparent;
+  box-sizing: border-box;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  font-size: 13px;
-  line-height: 1.7;
+  font-size: 14px;
+  font-variant-ligatures: none;
+  line-height: 1.75;
   tab-size: 2;
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
+  white-space: pre;
+  overflow-wrap: normal;
   word-break: normal;
   pointer-events: none;
   user-select: none;
@@ -135,7 +146,8 @@ textarea[aria-invalid="true"] {
 }
 
 .editor-meta-details,
-.unconverted-legend {
+.unconverted-legend,
+.cursor-position {
   display: inline-flex;
   align-items: center;
 }
@@ -144,6 +156,17 @@ textarea[aria-invalid="true"] {
   min-width: 0;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.cursor-position {
+  min-height: 22px;
+  padding: 0 7px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--muted-strong);
+  background: var(--surface-solid);
+  font-weight: 750;
+  white-space: nowrap;
 }
 
 .unconverted-legend {
@@ -196,12 +219,62 @@ textarea[aria-invalid="true"] {
 }
 
 .validation-head {
+  position: relative;
   display: grid;
+  width: 100%;
   grid-template-columns: auto auto minmax(0, 1fr);
   align-items: center;
   gap: 8px;
   min-height: 44px;
   padding: 9px 11px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  appearance: none;
+  text-align: left;
+}
+
+.validation-jump:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.validation-jump:not(:disabled) {
+  padding-right: 36px;
+}
+
+.validation-jump:not(:disabled)::after {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--primary);
+  border-bottom: 2px solid var(--primary);
+  content: "";
+  transform: translateY(-50%) rotate(-45deg);
+  transition: right var(--transition), border-color var(--transition);
+}
+
+.validation-jump:not(:disabled):hover {
+  background: rgba(79, 70, 229, 0.045);
+}
+
+.validation-jump:not(:disabled):hover::after {
+  right: 11px;
+}
+
+.validation-jump:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.validation-panel[data-state="warning"] .validation-jump:not(:disabled)::after {
+  border-color: var(--warning);
+}
+
+.validation-panel[data-state="error"] .validation-jump:not(:disabled)::after {
+  border-color: var(--danger);
 }
 
 .validation-dot {
@@ -510,8 +583,8 @@ textarea[aria-invalid="true"] {
 
 @media (max-width: 800px) {
   .app-shell {
-    width: min(100% - 24px, 720px);
-    padding-top: 24px;
+    width: 100%;
+    padding: 24px 16px 40px;
   }
 
   .hero {
@@ -568,8 +641,8 @@ textarea[aria-invalid="true"] {
 
 @media (max-width: 620px) {
   .app-shell {
-    width: min(100% - 20px, 560px);
-    padding: 18px 0 32px;
+    width: 100%;
+    padding: 18px 10px 32px;
   }
 
   .hero {
@@ -674,6 +747,14 @@ textarea[aria-invalid="true"] {
   .editor-tools {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .editor-meta {
+    align-items: flex-start;
+  }
+
+  .editor-meta-details {
+    flex-wrap: wrap;
   }
 
   .tool-button {
