@@ -320,65 +320,115 @@
     return hasTopLevelBlock(body);
   }
 
-  function indentText(text, spaces) {
-    var indentation = new Array(spaces + 1).join(" ");
-    return text.split("\n").map(function (line) {
-      return line ? indentation + line : line;
-    }).join("\n");
-  }
-
-  function cleanPrelude(prelude) {
-    return prelude.replace(/^\s+|\s+$/g, "");
-  }
-
-  function filterContainer(text, sourceUnit, context) {
-    var cursor = 0;
-    var outputParts = [];
-    var stats = {
+  function createFilterStats() {
+    return {
       totalDeclarations: 0,
       keptDeclarations: 0,
       removedDeclarations: 0,
       removedRules: 0
     };
+  }
+
+  function mergeFilterStats(target, source) {
+    target.totalDeclarations += source.totalDeclarations;
+    target.keptDeclarations += source.keptDeclarations;
+    target.removedDeclarations += source.removedDeclarations;
+    target.removedRules += source.removedRules;
+  }
+
+  function firstMeaningfulIndex(text) {
+    var index = 0;
+
+    while (index < text.length) {
+      var character = text.charAt(index);
+
+      if (/\s/.test(character)) {
+        index += 1;
+        continue;
+      }
+
+      if (character === "/" && text.charAt(index + 1) === "*") {
+        index = readComment(text, index);
+        continue;
+      }
+
+      return index;
+    }
+
+    return -1;
+  }
+
+  function isAtRuleStatement(text) {
+    var index = firstMeaningfulIndex(text);
+    return index !== -1 && text.charAt(index) === "@";
+  }
+
+  function trailingWhitespace(text) {
+    var match = text.match(/\s*$/);
+    return match ? match[0] : "";
+  }
+
+  function filterContainer(text, sourceUnit, context) {
+    var cursor = 0;
+    var output = "";
+    var keptContent = false;
+    var stats = createFilterStats();
 
     while (cursor < text.length) {
       var token = findNextTopLevelToken(text, cursor);
 
       if (!token) {
-        var trailing = text.slice(cursor).trim();
-        if (trailing) {
-          if (context === "stylesheet" && trailing.charAt(0) === "@") {
-            outputParts.push(trailing);
-          } else if (context === "rule") {
-            stats.totalDeclarations += 1;
-            if (hasConvertibleUnit(trailing, sourceUnit)) {
-              stats.keptDeclarations += 1;
-              outputParts.push(trailing.replace(/;?\s*$/, ";"));
-            } else {
-              stats.removedDeclarations += 1;
+        var trailing = text.slice(cursor);
+        var meaningfulIndex = firstMeaningfulIndex(trailing);
+
+        if (meaningfulIndex === -1) {
+          if (keptContent) {
+            output += trailing;
+          }
+        } else if (context === "stylesheet" && isAtRuleStatement(trailing)) {
+          output += trailing;
+          keptContent = true;
+        } else if (context === "rule") {
+          stats.totalDeclarations += 1;
+          if (hasConvertibleUnit(trailing, sourceUnit)) {
+            stats.keptDeclarations += 1;
+            output += trailing;
+            keptContent = true;
+          } else {
+            stats.removedDeclarations += 1;
+            if (keptContent) {
+              output += trailingWhitespace(trailing);
             }
           }
+        } else {
+          output += trailing;
+          keptContent = true;
         }
         break;
       }
 
       if (token.token === ";") {
-        var statement = text.slice(cursor, token.index + 1).trim();
+        var statement = text.slice(cursor, token.index + 1);
         cursor = token.index + 1;
 
-        if (!statement) {
+        if (firstMeaningfulIndex(statement) === -1) {
+          if (keptContent) {
+            output += statement;
+          }
           continue;
         }
 
-        if (context === "stylesheet" && statement.replace(/^\/\*[\s\S]*?\*\/\s*/, "").charAt(0) === "@") {
-          outputParts.push(statement);
+        if (context === "stylesheet" && isAtRuleStatement(statement)) {
+          output += statement;
+          keptContent = true;
           continue;
         }
 
         stats.totalDeclarations += 1;
         if (hasConvertibleUnit(statement, sourceUnit)) {
           stats.keptDeclarations += 1;
-          outputParts.push(statement);
+          output += statement;
+          keptContent = true;
         } else {
           stats.removedDeclarations += 1;
         }
@@ -387,26 +437,26 @@
 
       var closeIndex = findMatchingBrace(text, token.index);
       if (closeIndex === -1) {
-        var fallback = text.slice(cursor).trim();
-        if (fallback && hasConvertibleUnit(fallback, sourceUnit)) {
-          outputParts.push(fallback);
+        var malformed = text.slice(cursor);
+
+        if (hasConvertibleUnit(malformed, sourceUnit) || context === "stylesheet") {
+          output += malformed;
+          keptContent = true;
         }
         break;
       }
 
-      var prelude = cleanPrelude(text.slice(cursor, token.index));
+      var prelude = text.slice(cursor, token.index);
       var body = text.slice(token.index + 1, closeIndex);
       var childContext = isGroupingAtRule(prelude, body) ? "stylesheet" : "rule";
       var childResult = filterContainer(body, sourceUnit, childContext);
 
-      stats.totalDeclarations += childResult.stats.totalDeclarations;
-      stats.keptDeclarations += childResult.stats.keptDeclarations;
-      stats.removedDeclarations += childResult.stats.removedDeclarations;
-      stats.removedRules += childResult.stats.removedRules;
+      mergeFilterStats(stats, childResult.stats);
 
-      if (prelude && childResult.text.trim()) {
-        outputParts.push(prelude + " {\n" + indentText(childResult.text.trim(), 2) + "\n}");
-      } else if (prelude) {
+      if (childResult.kept) {
+        output += prelude + "{" + childResult.text + "}";
+        keptContent = true;
+      } else if (firstMeaningfulIndex(prelude) !== -1) {
         stats.removedRules += 1;
       }
 
@@ -414,14 +464,20 @@
     }
 
     return {
-      text: outputParts.join(context === "stylesheet" ? "\n\n" : "\n"),
-      stats: stats
+      text: output,
+      stats: stats,
+      kept: keptContent
     };
   }
 
   function filterMatchingDeclarations(text, sourceUnit) {
     var context = hasTopLevelBlock(text) ? "stylesheet" : "rule";
-    return filterContainer(text, sourceUnit, context);
+    var result = filterContainer(text, sourceUnit, context);
+
+    return {
+      text: result.text,
+      stats: result.stats
+    };
   }
 
   function byteSize(text) {

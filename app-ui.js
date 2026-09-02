@@ -211,7 +211,7 @@
       true
     );
 
-    elements.cssOutput.value = converted.text.trim();
+    elements.cssOutput.value = converted.text;
     updateWorkspaceMeta({
       convertedCount: converted.count,
       removedDeclarations: removedDeclarations

@@ -20,6 +20,7 @@
 
 - PX → VW와 VW → PX 양방향 변환
 - 입력할 때마다 다음 화면 프레임에서 결과 즉시 갱신
+- 필터 사용 시에도 기존 줄바꿈·공백·탭·중괄호 배치를 가능한 그대로 유지
 - 변환 대상 단위가 포함된 선언만 유지하는 선택 필터
 - 필터링 후 비어 있는 CSS 규칙 자동 제거
 - `0px`, `0vw`를 `0`으로 정리하는 선택 옵션
@@ -80,7 +81,7 @@ Node.js 22 이상에서 별도 패키지 설치 없이 전체 테스트를 실�
 node --test tests/*.test.js
 ```
 
-테스트 범위에는 단위 변환, 안전한 CSS 탐색, 중첩 규칙, 문법 검사, 요청한 뷰포트 목록, 화이트 전용 UI, 실시간 처리, 동일 높이 레이아웃과 정적 자산 연결 검사가 포함됩니다. `main` 브랜치 푸시와 Pull Request마다 GitHub Actions가 JavaScript 문법 검사와 회귀 테스트를 자동 실행합니다.
+테스트 범위에는 단위 변환, 안전한 CSS 탐색, 중첩 규칙, 원본 포맷 보존, 문법 오류 소스 처리, 문법 검사, 요청한 뷰포트 목록, 화이트 전용 UI, 실시간 처리, 동일 높이 레이아웃과 정적 자산 연결 검사가 포함됩니다. `main` 브랜치 푸시와 Pull Request마다 GitHub Actions가 JavaScript 문법 검사와 회귀 테스트를 자동 실행합니다.
 
 ## 구성
 
@@ -88,8 +89,10 @@ node --test tests/*.test.js
 .
 ├── .github/workflows/test.yml  # JavaScript 문법 및 회귀 테스트 자동화
 ├── tests/
-│   ├── converter-core.test.js  # 변환·문법 검사 엔진 테스트
-│   └── ui-contract.test.js     # UI 요구사항과 정적 자산 검사
+│   ├── class-attribute-typo.test.js # class 속성 오타 검사
+│   ├── converter-core.test.js       # 변환·문법 검사 엔진 테스트
+│   ├── format-preservation.test.js  # 원본 포맷 보존 회귀 테스트
+│   └── ui-contract.test.js          # UI 요구사항과 정적 자산 검사
 ├── index.html                  # 시맨틱 마크업과 화면 구조
 ├── styles-1.css                # 화이트 디자인 토큰과 기본 레이아웃
 ├── styles-2.css                # 변환 카드와 CSS 작업공간
@@ -104,6 +107,7 @@ node --test tests/*.test.js
 - 화이트 모드만 제공해 운영체제 테마와 무관하게 동일한 화면 유지
 - 외부 폰트, 프레임워크, 분석 스크립트 없음
 - `requestAnimationFrame`으로 입력 이벤트를 한 화면 프레임 단위로 병합
+- CSS를 새로 포맷하지 않고 원문 구간을 유지한 채 불필요한 선언만 제거
 - 모바일 320px부터 데스크톱까지 반응형 대응
 - 800px 이하 1열, 801px 이상 2열 단일 변환 레이아웃
 - 키보드 포커스, 스크린리더 상태 안내, 모션 감소 설정 지원
