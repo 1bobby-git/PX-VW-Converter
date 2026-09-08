@@ -149,7 +149,7 @@
   }
 
   function readNumberToken(text, startIndex) {
-    var match = text.slice(startIndex).match(/^[+-]?(?:\d+\.?\d*|\.\d+)/);
+    var match = text.slice(startIndex).match(/^[+-]?(?:\d*\.\d+|\d+)(?:[eE][+-]?\d+)?/);
     return match ? match[0] : "";
   }
 
@@ -189,12 +189,18 @@
 
         if (candidateUnit.toLowerCase() === config.sourceUnit && isUnitBoundary(text.charAt(unitStart + config.sourceUnit.length))) {
           var numericValue = Number(numberToken);
+          var convertedValue = convertUnitValue(numericValue, config, viewport);
+          if (!Number.isFinite(numericValue) || !Number.isFinite(convertedValue)) {
+            output += text.slice(index, unitStart + config.sourceUnit.length);
+            index = unitStart + config.sourceUnit.length;
+            continue;
+          }
           var replacement;
 
           if (stripZeroUnit && numericValue === 0) {
             replacement = "0";
           } else {
-            replacement = formatNumber(convertUnitValue(numericValue, config, viewport), precision) + config.targetUnit;
+            replacement = formatNumber(convertedValue, precision) + config.targetUnit;
           }
 
           output += transform === false ? text.slice(index, unitStart + config.sourceUnit.length) : replacement;
