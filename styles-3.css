@@ -196,9 +196,9 @@ textarea[aria-invalid="true"] {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 42px;
-  margin-top: 10px;
-  padding: 9px 11px;
+  min-height: 40px;
+  margin-top: 8px;
+  padding: 8px 11px;
   border: 1px solid var(--line);
   border-radius: 11px;
   color: var(--muted-strong);
@@ -211,7 +211,7 @@ textarea[aria-invalid="true"] {
 }
 
 .validation-panel {
-  margin-top: 10px;
+  margin-top: 8px;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 13px;
@@ -436,7 +436,7 @@ textarea[aria-invalid="true"] {
 }
 
 .workspace-footer {
-  margin-top: 16px;
+  margin-top: 10px;
 }
 
 .large-button {
@@ -473,7 +473,7 @@ textarea[aria-invalid="true"] {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1px;
-  margin-top: 18px;
+  margin-top: 12px;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 17px;
@@ -483,7 +483,7 @@ textarea[aria-invalid="true"] {
 
 .info-strip div {
   min-width: 0;
-  padding: 16px 18px;
+  padding: 12px 16px;
   background: var(--surface-solid);
 }
 
@@ -508,7 +508,7 @@ textarea[aria-invalid="true"] {
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 25px 3px 0;
+  padding: 14px 3px 0;
   color: var(--muted);
   font-size: 11px;
 }
@@ -584,7 +584,7 @@ textarea[aria-invalid="true"] {
 @media (max-width: 800px) {
   .app-shell {
     width: 100%;
-    padding: 24px 16px 40px;
+    padding: 14px 16px 28px;
   }
 
   .hero {
@@ -642,7 +642,7 @@ textarea[aria-invalid="true"] {
 @media (max-width: 620px) {
   .app-shell {
     width: 100%;
-    padding: 18px 10px 32px;
+    padding: 12px 10px 22px;
   }
 
   .hero {
@@ -692,7 +692,7 @@ textarea[aria-invalid="true"] {
   .settings-panel,
   .converter-card,
   .css-panel {
-    padding: 18px;
+    padding: 14px;
     border-radius: 19px;
   }
 
@@ -728,11 +728,11 @@ textarea[aria-invalid="true"] {
 
   .single-converter-section,
   .css-panel {
-    margin-top: 28px;
+    margin-top: 14px;
   }
 
   .converter-body {
-    margin-top: 19px;
+    margin-top: 12px;
   }
 
   .result-row output {
@@ -742,6 +742,11 @@ textarea[aria-invalid="true"] {
   .editor-head {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .editor-head .editor-tools {
+    margin-left: 0;
+    width: 100%;
   }
 
   .editor-tools {
@@ -821,7 +826,7 @@ textarea[aria-invalid="true"] {
   .settings-panel,
   .converter-card,
   .css-panel {
-    padding: 15px;
+    padding: 12px;
   }
 
   .unit-flow {

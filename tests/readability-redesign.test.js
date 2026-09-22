@@ -27,11 +27,13 @@ test("그림자·그라데이션·라운드를 줄인 평면 디자인을 적용
   assert.doesNotMatch(styles, /(?:linear|radial)-gradient/);
 });
 
-test("INPUT과 OUTPUT을 붙여 배치하고 편집기 높이를 비교하기 좋게 줄인다", () => {
+test("INPUT과 OUTPUT을 붙여 배치하고 와이드에서는 2열로 비교한다", () => {
   assert.match(styles, /\.editor-grid\s*\{[^}]*gap:\s*0[^}]*border:\s*1px solid var\(--line-strong\)/s);
   assert.match(styles, /\.editor-pane \+ \.editor-pane\s*\{[^}]*border-top:/s);
   assert.match(styles, /min-height:\s*clamp\(290px,\s*34vh,\s*440px\)/);
   assert.match(styles, /\.validation-list\s*\{[^}]*max-height:\s*150px/s);
+  assert.match(styles, /@media \(min-width: 1100px\) \{\s*\.editor-grid \{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/s);
+  assert.match(styles, /\.editor-pane \+ \.editor-pane\s*\{[^}]*border-left:/s);
 });
 
 test("INPUT과 OUTPUT에 동기화된 빠른 뷰포트 선택기를 제공한다", () => {
@@ -50,4 +52,17 @@ test("INPUT과 OUTPUT에 동기화된 빠른 뷰포트 선택기를 제공한다
   assert.match(app, /elements\.editorViewportButtons\.forEach/);
   assert.match(app, /elements\.editorViewportCurrent\.forEach/);
   assert.match(styles, /\.editor-viewport-chip\[aria-pressed="true"\]/);
+});
+
+test("에디터 헤더에 제목·뷰포트·도구를 가로 한 줄로 병합한다", () => {
+  assert.match(html, /class="editor-head-titles"/);
+  assert.equal((html.match(/class="editor-head-titles"/g) || []).length, 2);
+  assert.match(html, /<header class="editor-head">/);
+  const inputHead = html.slice(html.indexOf('id="inputPane"'), html.indexOf('class="code-editor"'));
+  assert.ok(inputHead.indexOf("editor-viewport-bar") !== -1, "INPUT 헤더에 뷰포트 바가 포함되어야 한다");
+  assert.ok(inputHead.indexOf("editor-tools") !== -1, "INPUT 헤더에 도구가 포함되어야 한다");
+  assert.match(styles, /\.editor-pane \.editor-head \{\s*display: flex;\s*flex-wrap: wrap;/s);
+  assert.match(styles, /\.editor-head-titles \{/);
+  assert.match(styles, /\.editor-head \.editor-viewport-bar \{/);
+  assert.match(styles, /\.editor-head \.editor-tools \{/);
 });

@@ -269,6 +269,54 @@
     syncInputHighlightGeometry();
   }
 
+  function getEditorTabSize() {
+    if (!elements.cssInput || !window.getComputedStyle) {
+      return 2;
+    }
+
+    var style = window.getComputedStyle(elements.cssInput);
+    var raw = style.tabSize || style.MozTabSize || "";
+    var parsed = parseInt(raw, 10);
+    return core.normalizeTabSize(parsed);
+  }
+
+  function measureEditorCharWidth() {
+    if (!elements.cssInput || !window.getComputedStyle) {
+      return 0;
+    }
+
+    var style = window.getComputedStyle(elements.cssInput);
+    var fontSize = parseFloat(style.fontSize) || 14;
+    var probe = document.createElement("span");
+    var sample = "";
+    var index;
+
+    probe.setAttribute("aria-hidden", "true");
+    probe.style.position = "fixed";
+    probe.style.top = "0";
+    probe.style.left = "-9999px";
+    probe.style.visibility = "hidden";
+    probe.style.pointerEvents = "none";
+    probe.style.whiteSpace = "pre";
+    probe.style.fontFamily = style.fontFamily;
+    probe.style.fontSize = style.fontSize;
+    probe.style.fontWeight = style.fontWeight;
+    probe.style.fontVariantLigatures = style.fontVariantLigatures;
+    probe.style.letterSpacing = style.letterSpacing;
+    probe.style.textRendering = style.textRendering;
+
+    for (index = 0; index < 80; index += 1) {
+      sample += "0";
+    }
+    probe.textContent = sample;
+    document.body.appendChild(probe);
+
+    var width = probe.getBoundingClientRect().width / 80;
+    document.body.removeChild(probe);
+
+    return Number.isFinite(width) && width > 0 ? width : fontSize * 0.6;
+  }
+
   function updateCursorPosition() {
     if (!elements.cssInput || !elements.cursorPosition) {
       return;
@@ -279,8 +327,7 @@
     var before = source.slice(0, offset);
     var line = before.split("\n").length;
     var lineStart = before.lastIndexOf("\n") + 1;
-    var columnText = before.slice(lineStart).replace(/\t/g, "  ");
-    var column = columnText.length + 1;
+    var column = core.countVisualColumns(before.slice(lineStart), getEditorTabSize()) + 1;
 
     elements.cursorPosition.textContent = line + "행 " + column + "열";
   }
@@ -623,6 +670,7 @@
   function validateCss() {
     var result = core.validateCssSyntax(elements.cssInput.value || "", {
       maxIssues: 100,
+      tabSize: getEditorTabSize(),
       declarationValidator: validateDeclarationInBrowser
     });
     renderValidation(result);
@@ -895,19 +943,19 @@
   function focusValidationIssue(button) {
     var offset = Number(button.dataset.offset) || 0;
     var length = Number(button.dataset.length) || 1;
+    var source = elements.cssInput.value;
     var computedStyle = window.getComputedStyle(elements.cssInput);
     var lineHeight = parseFloat(computedStyle.lineHeight) || 24;
-    var fontSize = parseFloat(computedStyle.fontSize) || 14;
-    var textBefore = elements.cssInput.value.slice(0, offset);
+    var textBefore = source.slice(0, offset);
     var line = textBefore.split("\n").length - 1;
     var lineStart = textBefore.lastIndexOf("\n") + 1;
-    var columnText = textBefore.slice(lineStart).replace(/\t/g, "  ");
-    var characterWidth = fontSize * 0.62;
+    var visualColumn = core.countVisualColumns(textBefore.slice(lineStart), getEditorTabSize());
+    var characterWidth = measureEditorCharWidth();
 
     elements.cssInput.focus();
     elements.cssInput.setSelectionRange(offset, Math.min(elements.cssInput.value.length, offset + length));
     elements.cssInput.scrollTop = Math.max(0, line * lineHeight - elements.cssInput.clientHeight / 3);
-    elements.cssInput.scrollLeft = Math.max(0, columnText.length * characterWidth - elements.cssInput.clientWidth / 3);
+    elements.cssInput.scrollLeft = Math.max(0, visualColumn * characterWidth - elements.cssInput.clientWidth / 3);
     updateCursorPosition();
     syncInputHighlightGeometry();
   }

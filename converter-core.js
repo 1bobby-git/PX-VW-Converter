@@ -646,6 +646,31 @@
     }
   }
 
+  function normalizeTabSize(tabSize) {
+    var parsed = Number(tabSize);
+    if (!Number.isFinite(parsed) || parsed < 1) {
+      return 2;
+    }
+    return Math.min(16, Math.max(1, Math.floor(parsed)));
+  }
+
+  function countVisualColumns(text, tabSize) {
+    var size = normalizeTabSize(tabSize);
+    var source = typeof text === "string" ? text : "";
+    var column = 0;
+    var index;
+
+    for (index = 0; index < source.length; index += 1) {
+      if (source.charAt(index) === "\t") {
+        column += size - (column % size);
+      } else {
+        column += 1;
+      }
+    }
+
+    return column;
+  }
+
   function buildLineStarts(text) {
     var starts = [0];
     var index;
@@ -659,7 +684,7 @@
     return starts;
   }
 
-  function locateOffset(lineStarts, offset) {
+  function locateOffset(lineStarts, offset, text, tabSize) {
     var low = 0;
     var high = lineStarts.length - 1;
 
@@ -673,9 +698,15 @@
     }
 
     var lineIndex = Math.max(0, high);
+    var lineStart = lineStarts[lineIndex];
+    var column = countVisualColumns(
+      typeof text === "string" ? text.slice(lineStart, offset) : "",
+      tabSize
+    ) + 1;
+
     return {
       line: lineIndex + 1,
-      column: offset - lineStarts[lineIndex] + 1
+      column: column
     };
   }
 
@@ -1011,6 +1042,7 @@
     var settings = options || {};
     var collector = createIssueCollector(source, settings.maxIssues);
     var declarations = [];
+    var tabSize = normalizeTabSize(settings.tabSize);
 
     if (!source.trim()) {
       return {
@@ -1065,7 +1097,7 @@
     });
 
     collector.issues.forEach(function (issue) {
-      var location = locateOffset(lineStarts, issue.offset);
+      var location = locateOffset(lineStarts, issue.offset, source, tabSize);
       issue.line = location.line;
       issue.column = location.column;
     });
@@ -1091,6 +1123,8 @@
     filterMatchingDeclarations: filterMatchingDeclarations,
     byteSize: byteSize,
     formatBytes: formatBytes,
-    validateCssSyntax: validateCssSyntax
+    validateCssSyntax: validateCssSyntax,
+    countVisualColumns: countVisualColumns,
+    normalizeTabSize: normalizeTabSize
   };
 }(window));

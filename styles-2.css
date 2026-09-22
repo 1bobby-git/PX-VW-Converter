@@ -1,5 +1,5 @@
 .single-converter-section {
-  margin-top: 34px;
+  margin-top: 16px;
 }
 
 .live-badge {
@@ -90,7 +90,7 @@
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   align-items: stretch;
   gap: 14px;
-  margin-top: 24px;
+  margin-top: 14px;
 }
 
 .number-field,
@@ -193,7 +193,7 @@
   display: flex;
   gap: 9px;
   margin-top: auto;
-  padding-top: 16px;
+  padding-top: 12px;
 }
 
 .button,
@@ -246,8 +246,8 @@
 }
 
 .css-panel {
-  margin-top: 36px;
-  padding: 26px;
+  margin-top: 16px;
+  padding: 20px;
 }
 
 .css-panel-head {
@@ -316,8 +316,8 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
-  margin-top: 22px;
-  padding: 12px;
+  margin-top: 14px;
+  padding: 10px;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--surface-soft);
@@ -429,8 +429,8 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: stretch;
-  gap: 22px;
-  margin-top: 18px;
+  gap: 14px;
+  margin-top: 12px;
 }
 
 .editor-pane {
@@ -511,11 +511,11 @@
 
 .editor-meta {
   display: flex;
-  min-height: 24px;
+  min-height: 22px;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin: 10px 2px 8px;
+  margin: 8px 2px 4px;
   color: var(--muted);
   font-family: "SFMono-Regular", Consolas, monospace;
   font-size: 11px;
