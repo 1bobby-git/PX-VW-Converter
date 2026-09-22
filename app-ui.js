@@ -9,6 +9,7 @@
   var STORAGE_KEY = "pxvw-converter-settings-v3";
   var MAX_FILE_SIZE = 2 * 1024 * 1024;
   var liveUpdateFrame = null;
+  var highlightSyncFrame = null;
   var inputHighlightResizeObserver = null;
   var toastTimer = null;
   var currentFileName = "";
@@ -222,12 +223,171 @@
 
     var width = Math.max(elements.cssInput.scrollWidth, elements.cssInput.clientWidth);
     var height = Math.max(elements.cssInput.scrollHeight, elements.cssInput.clientHeight);
+    var scrollLeft = elements.cssInput.scrollLeft;
+    var scrollTop = elements.cssInput.scrollTop;
 
     elements.cssInputHighlight.style.width = width + "px";
     elements.cssInputHighlight.style.height = height + "px";
-    elements.cssInputHighlight.style.transform = "translate3d(" +
-      (-elements.cssInput.scrollLeft) + "px, " +
-      (-elements.cssInput.scrollTop) + "px, 0)";
+    if (scrollLeft === 0 && scrollTop === 0) {
+      elements.cssInputHighlight.style.transform = "none";
+    } else {
+      elements.cssInputHighlight.style.transform = "translate(" +
+        (-scrollLeft) + "px, " +
+        (-scrollTop) + "px)";
+    }
+    renderInputSelection();
+  }
+
+  function getTextRect(root, offset) {
+    if (!root || !Number.isFinite(offset) || offset < 0) {
+      return null;
+    }
+
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    var node;
+    var acc = 0;
+
+    while ((node = walker.nextNode())) {
+      if (acc + node.length > offset) {
+        var local = offset - acc;
+        var range = document.createRange();
+        range.setStart(node, local);
+        range.setEnd(node, Math.min(local + 1, node.length));
+        return range.getBoundingClientRect();
+      }
+      acc += node.length;
+    }
+
+    return null;
+  }
+
+  function ensureCaretLineVisible() {
+    var ta = elements.cssInput;
+    var pre = elements.cssInputHighlight;
+    if (!ta || !pre || ensureCaretLineVisible.active) {
+      return;
+    }
+
+    var caret = ta.selectionStart;
+    if (!Number.isFinite(caret)) {
+      return;
+    }
+
+    var value = ta.value || "";
+    var lineStart = value.lastIndexOf("\n", Math.max(0, caret - 1)) + 1;
+    var lineEnd = value.indexOf("\n", caret);
+    if (lineEnd < 0) {
+      lineEnd = value.length;
+    }
+
+    var startRect = getTextRect(pre, lineStart);
+    var endOffset = lineEnd > lineStart ? lineEnd - 1 : lineStart;
+    var endRect = getTextRect(pre, endOffset);
+    if (!startRect || !endRect) {
+      return;
+    }
+
+    var taRect = ta.getBoundingClientRect();
+    var pad = parseFloat(window.getComputedStyle(ta).paddingLeft) || 18;
+    var lineLeft = Math.min(startRect.left, endRect.left);
+    var lineRight = Math.max(startRect.right, endRect.right);
+    var lineWidth = lineRight - lineLeft;
+    var viewLeft = taRect.left + pad;
+    var viewRight = taRect.right - pad;
+    var viewWidth = viewRight - viewLeft;
+
+    if (lineWidth > viewWidth + 0.5) {
+      return;
+    }
+
+    var clippedLeft = viewLeft - lineLeft;
+    var clippedRight = lineRight - viewRight;
+    var delta = 0;
+
+    if (clippedLeft > 0.5) {
+      delta = -clippedLeft;
+    } else if (clippedRight > 0.5) {
+      delta = clippedRight;
+    } else {
+      return;
+    }
+
+    var maxScroll = Math.max(0, ta.scrollWidth - ta.clientWidth);
+    var next = Math.max(0, Math.min(maxScroll, ta.scrollLeft + delta));
+    if (Math.abs(next - ta.scrollLeft) < 0.5) {
+      return;
+    }
+
+    ensureCaretLineVisible.active = true;
+    ta.scrollLeft = next;
+    window.requestAnimationFrame(function () {
+      ensureCaretLineVisible.active = false;
+      syncInputHighlightGeometry();
+    });
+  }
+
+  function supportsCustomSelection() {
+    return Boolean(window.CSS && typeof window.CSS.highlights !== "undefined" &&
+      typeof window.Highlight === "function");
+  }
+
+  function rangeFromTextOffsets(root, start, end) {
+    if (!root || end <= start) {
+      return null;
+    }
+
+    var range = document.createRange();
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    var node;
+    var offset = 0;
+    var started = false;
+
+    while ((node = walker.nextNode())) {
+      var length = node.length;
+      if (!started && offset + length > start) {
+        range.setStart(node, start - offset);
+        started = true;
+      }
+      if (started && offset + length >= end) {
+        range.setEnd(node, Math.min(end - offset, length));
+        return range;
+      }
+      offset += length;
+    }
+
+    return started ? range : null;
+  }
+
+  function clearInputSelection() {
+    if (supportsCustomSelection()) {
+      window.CSS.highlights.delete("pxvw-editor-selection");
+    }
+  }
+
+  function renderInputSelection() {
+    if (!supportsCustomSelection() || !elements.cssInput || !elements.cssInputHighlight) {
+      return;
+    }
+
+    if (document.activeElement !== elements.cssInput) {
+      clearInputSelection();
+      return;
+    }
+
+    var start = elements.cssInput.selectionStart;
+    var end = elements.cssInput.selectionEnd;
+    if (!(Number.isFinite(start) && Number.isFinite(end)) || end <= start) {
+      clearInputSelection();
+      return;
+    }
+
+    var range = rangeFromTextOffsets(elements.cssInputHighlight, start, end);
+    if (!range) {
+      clearInputSelection();
+      return;
+    }
+
+    window.CSS.highlights.set("pxvw-editor-selection", new window.Highlight(range));
   }
 
   function renderInputHighlight(source, ranges) {
@@ -262,9 +422,13 @@
     elements.cssInputHighlight.textContent = "";
     elements.cssInputHighlight.appendChild(fragment);
     elements.cssInputEditor.classList.add("is-highlight-ready");
+    if (supportsCustomSelection()) {
+      elements.cssInputEditor.classList.add("is-custom-selection");
+    }
     elements.unconvertedLegend.hidden = normalized.length === 0;
     elements.unconvertedLegend.textContent = normalized.length + "개 출력 제외";
     syncInputHighlightGeometry();
+    renderInputSelection();
   }
 
   function getEditorTabSize() {
@@ -328,6 +492,20 @@
     var column = core.countVisualColumns(before.slice(lineStart), getEditorTabSize()) + 1;
 
     elements.cursorPosition.textContent = line + "행 " + column + "열";
+    syncInputHighlightGeometry();
+    renderInputSelection();
+    ensureCaretLineVisible();
+  }
+
+  function scheduleHighlightSync() {
+    if (highlightSyncFrame !== null) {
+      return;
+    }
+    highlightSyncFrame = window.requestAnimationFrame(function () {
+      highlightSyncFrame = null;
+      syncInputHighlightGeometry();
+      ensureCaretLineVisible();
+    });
   }
 
   function updateWorkspaceMeta(resultStats) {
@@ -1010,10 +1188,27 @@
     });
 
     elements.cssInput.addEventListener("input", scheduleLivePipeline);
+    elements.cssInput.addEventListener("input", scheduleHighlightSync);
+    elements.cssInput.addEventListener("input", renderInputSelection);
+    elements.cssInput.addEventListener("keyup", renderInputSelection);
+    elements.cssInput.addEventListener("mouseup", renderInputSelection);
+    elements.cssInput.addEventListener("focus", function () {
+      if (supportsCustomSelection()) {
+        elements.cssInputEditor.classList.add("is-custom-selection");
+      }
+      renderInputSelection();
+    });
+    elements.cssInput.addEventListener("blur", clearInputSelection);
     ["click", "keyup", "select"].forEach(function (eventName) {
       elements.cssInput.addEventListener(eventName, updateCursorPosition);
     });
-    elements.cssInput.addEventListener("scroll", syncInputHighlightGeometry);
+    elements.cssInput.addEventListener("scroll", function () {
+      syncInputHighlightGeometry();
+      renderInputSelection();
+      if (!ensureCaretLineVisible.active) {
+        ensureCaretLineVisible();
+      }
+    });
     elements.cssInput.addEventListener("compositionstart", function () {
       elements.cssInputEditor.classList.add("is-composing");
     });
@@ -1029,6 +1224,7 @@
         elements.cssInput.setRangeText("  ", start, end, "end");
         elements.cssInput.dispatchEvent(new Event("input", { bubbles: true }));
       }
+      scheduleHighlightSync();
     });
 
     elements.validationJump.addEventListener("click", function () {

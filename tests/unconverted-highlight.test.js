@@ -67,8 +67,12 @@ test("입력 편집기가 안전한 미러 레이어와 출력 제외 범례를 
   assert.match(app, /filtered \? filtered\.removedRanges : \[\]/);
   assert.match(app, /document\.createTextNode/);
   assert.match(app, /className = "is-unconverted"/);
-  assert.match(app, /addEventListener\("scroll", syncInputHighlightGeometry\)/);
+  assert.match(app, /addEventListener\("scroll", function \(\) \{\s*syncInputHighlightGeometry\(\);/);
   assert.doesNotMatch(app, /cssInputHighlight\.innerHTML/);
   assert.match(styles, /\.code-editor-highlight \.is-unconverted/);
   assert.match(styles, /color: var\(--danger\)/);
+  assert.match(styles, /::highlight\(pxvw-editor-selection\)/);
+  assert.match(styles, /\.code-editor\.is-custom-selection\.is-highlight-ready #cssInput::selection/);
+  assert.match(app, /CSS\.highlights\.set\("pxvw-editor-selection"/);
+  assert.match(app, /function renderInputSelection\(\)/);
 });

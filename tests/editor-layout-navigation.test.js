@@ -81,3 +81,35 @@ test("탭 정지 기반 시각 열 계산이 정확하다", () => {
   assert.equal(core.countVisualColumns("\t\t", 2), 4);
   assert.equal(core.countVisualColumns("a\tb", 4), 5);
 });
+
+test("미러와 textarea의 글리프 타이포를 일치시켜 중간 클릭 오프셋을 맞춘다", () => {
+  assert.match(
+    styles4,
+    /\.code-editor textarea,\s*\.code-editor-highlight\s*\{[^}]*letter-spacing:\s*normal[^}]*text-rendering:\s*auto[^}]*font-variant-ligatures:\s*none[^}]*\}/s
+  );
+  const highlightRules = styles4.match(/\.code-editor-highlight\s*\{[^}]*\}/g) || [];
+  assert.ok(highlightRules.length > 0);
+  highlightRules.forEach((rule) => {
+    const match = rule.match(/letter-spacing:\s*([^;]+);/);
+    if (match) {
+      assert.equal(match[1].trim(), "normal", rule);
+    }
+  });
+});
+
+test("커서 이동·입력 시 미러 스크롤 변환을 즉시 동기화한다", () => {
+  assert.match(app, /function scheduleHighlightSync\(\)/);
+  assert.match(app, /var highlightSyncFrame = null/);
+  assert.match(app, /elements\.cursorPosition\.textContent = line \+ "행 " \+ column \+ "열";\s*syncInputHighlightGeometry\(\)/);
+  assert.match(app, /elements\.cssInput\.addEventListener\("keydown", function \(event\) \{[\s\S]*scheduleHighlightSync\(\)/);
+  assert.match(app, /elements\.cssInput\.addEventListener\("input", scheduleHighlightSync\)/);
+  assert.match(app, /addEventListener\("scroll", function \(\) \{/);
+});
+
+test("커서가 짧은 끝줄에 있을 때 가로 스크롤을 보정해 공백 행을 막는다", () => {
+  assert.match(app, /function ensureCaretLineVisible\(\)/);
+  assert.match(app, /function getTextRect\(root, offset\)/);
+  assert.match(app, /ensureCaretLineVisible\.active/);
+  assert.match(app, /syncInputHighlightGeometry\(\);\s*ensureCaretLineVisible\(\)/);
+  assert.match(app, /elements\.cursorPosition\.textContent = line \+ "행 " \+ column \+ "열";\s*syncInputHighlightGeometry\(\);\s*renderInputSelection\(\);\s*ensureCaretLineVisible\(\)/);
+});

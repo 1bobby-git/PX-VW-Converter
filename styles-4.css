@@ -347,6 +347,26 @@ textarea[readonly] {
   line-height: 1.65;
 }
 
+.code-editor textarea,
+.code-editor-highlight {
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-rendering: auto;
+  font-kerning: none;
+  font-variant-ligatures: none;
+  font-feature-settings: normal;
+  font-optical-sizing: auto;
+  text-indent: 0;
+  text-align: left;
+  text-transform: none;
+  text-orientation: mixed;
+  text-decoration: none;
+  text-decoration-skip-ink: auto;
+  text-underline-position: auto;
+  text-shadow: none;
+  font-synthesis: none;
+}
+
 .code-editor:focus-within {
   box-shadow: 0 0 0 2px var(--focus);
 }

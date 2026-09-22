@@ -76,6 +76,16 @@ textarea[aria-invalid="true"] {
   -webkit-text-fill-color: transparent;
 }
 
+.code-editor.is-custom-selection.is-highlight-ready #cssInput::selection {
+  background: transparent;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+::highlight(pxvw-editor-selection) {
+  background: rgba(75, 86, 198, 0.92);
+}
+
 .code-editor.is-highlight-ready #cssInput::placeholder {
   color: #94a3b8;
   opacity: 1;
