@@ -21,6 +21,7 @@
   --radius-sm: 6px;
   --radius-md: 9px;
   --radius-lg: 12px;
+  --editor-height: clamp(290px, 34vh, 440px);
 }
 
 html,
@@ -188,14 +189,14 @@ body,
 }
 
 .css-panel {
-  padding: clamp(14px, 1.4vw, 22px);
+  padding: clamp(10px, 1.2vw, 18px);
 }
 
 .editor-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 0;
-  margin-top: 10px;
+  margin-top: 6px;
   overflow: hidden;
   border: 1px solid var(--line-strong);
   border-radius: 10px;
@@ -203,7 +204,7 @@ body,
 }
 
 .editor-pane {
-  padding: clamp(15px, 1.2vw, 20px);
+  padding: clamp(12px, 1vw, 16px);
   border: 0;
   border-radius: 0;
   background: #ffffff;
@@ -220,6 +221,11 @@ body,
   border-color: transparent;
   box-shadow: inset 3px 0 0 var(--primary);
   transform: none;
+}
+
+.editor-pane.has-syntax-warning {
+  border-color: transparent;
+  box-shadow: inset 3px 0 0 var(--warning);
 }
 
 .editor-pane.has-syntax-error {
@@ -251,7 +257,7 @@ body,
   align-items: center;
   gap: 8px 12px;
   min-height: auto;
-  padding-bottom: 8px;
+  padding-bottom: 6px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -266,12 +272,6 @@ body,
 .editor-head h3 {
   margin: 0;
   font-size: 17px;
-}
-
-.editor-head .editor-viewport-bar {
-  flex: 1 1 auto;
-  min-width: 0;
-  margin-top: 0;
 }
 
 .editor-head .editor-tools {
@@ -293,87 +293,14 @@ body,
   background: var(--surface-hover);
 }
 
-.editor-viewport-bar {
-  display: flex;
-  min-width: 0;
-  min-height: 34px;
-  align-items: center;
-  gap: 8px;
-  margin-top: 0;
-  padding: 4px 6px;
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  background: #fafbfc;
-}
-
-.editor-viewport-label {
-  flex: 0 0 auto;
-  color: var(--muted-strong);
-  font-size: 10px;
-  font-weight: 650;
-  letter-spacing: 0.015em;
-  white-space: nowrap;
-}
-
-.editor-viewport-list {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 3px;
-  overflow-x: auto;
-  scrollbar-color: var(--line-strong) transparent;
-  scrollbar-width: thin;
-}
-
-.editor-viewport-chip {
-  flex: 0 0 auto;
-  height: 27px;
-  padding: 0 8px;
-  border: 1px solid transparent;
-  border-radius: 5px;
-  color: var(--muted-strong);
-  background: transparent;
-  font-size: 11px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.editor-viewport-chip:hover {
-  border-color: var(--line-strong);
-  color: var(--text);
-  background: #ffffff;
-}
-
-.editor-viewport-chip:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 1px;
-}
-
-.editor-viewport-chip[aria-pressed="true"] {
-  border-color: var(--primary-line);
-  color: var(--primary);
-  background: var(--primary-soft);
-}
-
-.editor-viewport-current {
-  flex: 0 0 auto;
-  margin-left: auto;
-  padding: 0 3px;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 550;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
 .editor-meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  min-height: 20px;
-  margin: 6px 2px 4px;
+  min-height: 18px;
+  margin: 4px 2px;
   font-size: 10px;
 }
 
@@ -387,7 +314,7 @@ body,
 
 textarea,
 .code-editor {
-  min-height: clamp(290px, 34vh, 440px);
+  min-height: var(--editor-height);
   border-radius: 7px;
 }
 
@@ -425,13 +352,13 @@ textarea[readonly] {
 }
 
 .validation-panel {
-  margin-top: 5px;
+  margin-top: 4px;
   border-radius: 7px;
 }
 
 .validation-head {
-  min-height: 40px;
-  padding: 7px 10px;
+  min-height: 36px;
+  padding: 6px 10px;
 }
 
 .validation-head strong {
@@ -444,11 +371,11 @@ textarea[readonly] {
 }
 
 .validation-issue {
-  padding: 8px 10px;
+  padding: 6px 10px;
 }
 
 .workspace-footer {
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .info-strip {
@@ -474,7 +401,7 @@ textarea[readonly] {
 @media (max-width: 800px) {
   .app-shell {
     width: 100%;
-    padding: 14px 14px 28px;
+    padding: 12px 14px 24px;
   }
 
   .settings-panel,
@@ -483,9 +410,8 @@ textarea[readonly] {
     border-radius: 10px;
   }
 
-  textarea,
-  .code-editor {
-    min-height: 280px;
+  :root {
+    --editor-height: 280px;
   }
 }
 
@@ -500,21 +426,6 @@ textarea[readonly] {
     width: 100%;
   }
 
-  .editor-viewport-bar {
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .editor-viewport-list {
-    order: 3;
-    width: 100%;
-    padding-bottom: 2px;
-  }
-
-  .editor-viewport-current {
-    margin-left: auto;
-  }
-
   .editor-meta {
     align-items: flex-start;
   }
@@ -526,19 +437,18 @@ textarea[readonly] {
 
 @media (max-width: 390px) {
   .app-shell {
-    padding-inline: 10px;
+    padding-inline: 8px;
   }
 
   .settings-panel,
   .converter-card,
   .css-panel {
-    padding: 12px;
+    padding: 10px;
     border-radius: 9px;
   }
 
-  textarea,
-  .code-editor {
-    min-height: 250px;
+  :root {
+    --editor-height: 250px;
   }
 
   textarea,

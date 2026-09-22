@@ -1,7 +1,7 @@
 textarea {
   display: block;
   width: 100%;
-  min-height: clamp(400px, 44vh, 640px);
+  min-height: var(--editor-height);
   padding: 18px 20px;
   overflow: auto;
   resize: vertical;
@@ -41,7 +41,7 @@ textarea[aria-invalid="true"] {
 
 .code-editor {
   position: relative;
-  min-height: clamp(400px, 44vh, 640px);
+  min-height: var(--editor-height);
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 13px;
@@ -187,7 +187,7 @@ textarea[aria-invalid="true"] {
 }
 
 .drop-hint {
-  margin: 8px 1px 0;
+  margin: 6px 1px 0;
   color: var(--muted);
   font-size: 10px;
 }
@@ -196,9 +196,9 @@ textarea[aria-invalid="true"] {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 40px;
-  margin-top: 8px;
-  padding: 8px 11px;
+  min-height: 36px;
+  margin-top: 6px;
+  padding: 6px 10px;
   border: 1px solid var(--line);
   border-radius: 11px;
   color: var(--muted-strong);
@@ -211,7 +211,7 @@ textarea[aria-invalid="true"] {
 }
 
 .validation-panel {
-  margin-top: 8px;
+  margin-top: 4px;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 13px;
@@ -225,8 +225,8 @@ textarea[aria-invalid="true"] {
   grid-template-columns: auto auto minmax(0, 1fr);
   align-items: center;
   gap: 8px;
-  min-height: 44px;
-  padding: 9px 11px;
+  min-height: 40px;
+  padding: 6px 10px;
   border: 0;
   color: inherit;
   background: transparent;
@@ -333,7 +333,7 @@ textarea[aria-invalid="true"] {
 
 .validation-list {
   display: grid;
-  max-height: 260px;
+  max-height: 150px;
   margin: 0;
   padding: 0;
   overflow: auto;
@@ -354,7 +354,7 @@ textarea[aria-invalid="true"] {
   grid-template-columns: auto auto minmax(0, 1fr);
   align-items: start;
   gap: 8px;
-  padding: 9px 11px;
+  padding: 6px 10px;
   border: 0;
   color: var(--text-soft);
   background: transparent;
@@ -377,7 +377,7 @@ textarea[aria-invalid="true"] {
   align-items: center;
   min-height: 20px;
   border-radius: 6px;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 850;
   line-height: 1;
 }
@@ -414,7 +414,7 @@ textarea[aria-invalid="true"] {
 
 .validation-more {
   margin: 0;
-  padding: 8px 11px;
+  padding: 6px 10px;
   border-top: 1px solid var(--line);
   color: var(--muted);
   background: var(--surface-solid);
@@ -436,11 +436,11 @@ textarea[aria-invalid="true"] {
 }
 
 .workspace-footer {
-  margin-top: 10px;
+  margin-top: 6px;
 }
 
 .large-button {
-  min-height: 48px;
+  min-height: 44px;
   padding-inline: 20px;
 }
 
@@ -448,7 +448,7 @@ textarea[aria-invalid="true"] {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 6px;
 }
 
 .conversion-stats span {
@@ -473,7 +473,7 @@ textarea[aria-invalid="true"] {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1px;
-  margin-top: 12px;
+  margin-top: 10px;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 17px;
@@ -483,7 +483,7 @@ textarea[aria-invalid="true"] {
 
 .info-strip div {
   min-width: 0;
-  padding: 12px 16px;
+  padding: 10px 14px;
   background: var(--surface-solid);
 }
 
@@ -508,7 +508,7 @@ textarea[aria-invalid="true"] {
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 14px 3px 0;
+  padding: 10px 3px 0;
   color: var(--muted);
   font-size: 11px;
 }
@@ -566,6 +566,7 @@ textarea[aria-invalid="true"] {
 @media (max-width: 1100px) {
   .settings-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 
   .preset-field {
@@ -573,18 +574,25 @@ textarea[aria-invalid="true"] {
   }
 
   .preset-list {
-    grid-template-columns: repeat(7, minmax(72px, 1fr));
+    grid-template-columns: repeat(7, minmax(64px, 1fr));
   }
 
   .converter-body {
     grid-template-columns: 1fr;
+    margin-top: 8px;
   }
 }
 
 @media (max-width: 800px) {
   .app-shell {
     width: 100%;
-    padding: 14px 16px 28px;
+    padding: 12px 14px 24px;
+  }
+
+  .converter-grid,
+  .editor-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
 
   .hero {
@@ -605,6 +613,7 @@ textarea[aria-invalid="true"] {
   .converter-grid,
   .editor-grid {
     grid-template-columns: 1fr;
+    gap: 10px;
   }
 
   .css-panel-head {
@@ -615,18 +624,14 @@ textarea[aria-invalid="true"] {
   .segment-control {
     width: 100%;
     min-width: 0;
+    padding: 3px;
   }
 
   .option-bar {
     grid-template-columns: 1fr;
-  }
-
-  textarea {
-    min-height: 300px;
-  }
-
-  .code-editor {
-    min-height: 300px;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 7px;
   }
 
   .workspace-footer {
@@ -642,17 +647,17 @@ textarea[aria-invalid="true"] {
 @media (max-width: 620px) {
   .app-shell {
     width: 100%;
-    padding: 12px 10px 22px;
+    padding: 10px 8px 18px;
   }
 
   .hero {
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
   }
 
   .brand-block {
     align-items: flex-start;
-    gap: 13px;
+    gap: 10px;
   }
 
   .brand-mark {
@@ -660,7 +665,7 @@ textarea[aria-invalid="true"] {
     gap: 0;
     width: 52px;
     min-width: 52px;
-    height: 58px;
+    height: 54px;
     padding: 8px 0;
     border-radius: 15px;
     text-align: center;
@@ -671,11 +676,11 @@ textarea[aria-invalid="true"] {
   }
 
   .hero h1 {
-    font-size: 29px;
+    font-size: 27px;
   }
 
   .hero-copy {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .hero-actions {
@@ -692,13 +697,13 @@ textarea[aria-invalid="true"] {
   .settings-panel,
   .converter-card,
   .css-panel {
-    padding: 14px;
+    padding: 14px 12px;
     border-radius: 19px;
   }
 
   .settings-grid {
     grid-template-columns: 1fr;
-    gap: 15px;
+    gap: 12px;
   }
 
   .preset-field {
@@ -708,17 +713,18 @@ textarea[aria-invalid="true"] {
   .preset-list {
     display: flex;
     overflow-x: auto;
-    padding: 1px 1px 7px;
+    padding: 1px 1px 5px;
     scrollbar-width: thin;
   }
 
   .preset-chip {
     flex: 0 0 66px;
-    height: 42px;
+    height: 36px;
   }
 
   .section-heading {
     align-items: flex-start;
+    margin-bottom: 4px;
   }
 
   .section-heading > .section-description,
@@ -728,11 +734,11 @@ textarea[aria-invalid="true"] {
 
   .single-converter-section,
   .css-panel {
-    margin-top: 14px;
+    margin-top: 10px;
   }
 
   .converter-body {
-    margin-top: 12px;
+    margin-top: 8px;
   }
 
   .result-row output {
@@ -826,7 +832,7 @@ textarea[aria-invalid="true"] {
   .settings-panel,
   .converter-card,
   .css-panel {
-    padding: 12px;
+    padding: 10px;
   }
 
   .unit-flow {
@@ -834,17 +840,12 @@ textarea[aria-invalid="true"] {
   }
 
   .option-bar {
-    padding: 7px;
+    padding: 6px;
   }
 
   textarea {
-    min-height: 270px;
     padding: 12px;
     font-size: 12px;
-  }
-
-  .code-editor {
-    min-height: 270px;
   }
 
   .code-editor-highlight {

@@ -43,8 +43,6 @@
     viewportError: byId("viewportError"),
     precision: byId("precision"),
     presetButtons: Array.prototype.slice.call(document.querySelectorAll(".preset-chip")),
-    editorViewportButtons: Array.prototype.slice.call(document.querySelectorAll("[data-editor-viewport]")),
-    editorViewportCurrent: Array.prototype.slice.call(document.querySelectorAll("[data-editor-viewport-current]")),
     pxToVwForm: byId("pxToVwForm"),
     vwToPxForm: byId("vwToPxForm"),
     pxInput: byId("pxInput"),
@@ -721,23 +719,12 @@
 
   function updatePresetState() {
     var viewport = core.parseFiniteNumber(elements.viewportWidth.value);
-    var viewportLabel = viewport === null
-      ? "현재 값 확인"
-      : "현재 " + viewport.toLocaleString("ko-KR", { maximumFractionDigits: 2 }) + "px";
 
     elements.presetButtons.forEach(function (button) {
       var isActive = viewport !== null && Number(button.dataset.viewport) === viewport;
       button.setAttribute("aria-pressed", isActive ? "true" : "false");
     });
 
-    elements.editorViewportButtons.forEach(function (button) {
-      var isActive = viewport !== null && Number(button.dataset.editorViewport) === viewport;
-      button.setAttribute("aria-pressed", isActive ? "true" : "false");
-    });
-
-    elements.editorViewportCurrent.forEach(function (label) {
-      label.textContent = viewportLabel;
-    });
   }
 
   function getSettings() {
@@ -973,15 +960,6 @@
         elements.viewportError.hidden = true;
         handleSettingsChange();
         elements.viewportWidth.focus();
-      });
-    });
-
-    elements.editorViewportButtons.forEach(function (button) {
-      button.addEventListener("click", function () {
-        elements.viewportWidth.value = button.dataset.editorViewport;
-        elements.viewportError.hidden = true;
-        handleSettingsChange();
-        button.focus();
       });
     });
 

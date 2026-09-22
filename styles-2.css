@@ -1,5 +1,5 @@
 .single-converter-section {
-  margin-top: 16px;
+  margin-top: 12px;
 }
 
 .live-badge {
@@ -10,21 +10,21 @@
 }
 
 .live-badge span {
-  font-size: 8px;
+  font-size: 10px;
 }
 
 .converter-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: stretch;
-  gap: 18px;
+  gap: 14px;
 }
 
 .converter-card {
   display: flex;
   min-width: 0;
   height: 100%;
-  padding: 22px;
+  padding: 16px 18px;
   border-radius: var(--radius-lg);
   flex-direction: column;
   transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
@@ -43,7 +43,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
 }
 
 .converter-card-head h3,
@@ -54,7 +54,7 @@
 }
 
 .converter-card-head h3 {
-  font-size: 23px;
+  font-size: clamp(19px, 2vw, 23px);
 }
 
 .unit-flow {
@@ -89,13 +89,13 @@
   flex: 1 1 auto;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   align-items: stretch;
-  gap: 14px;
-  margin-top: 14px;
+  gap: 12px;
+  margin-top: 10px;
 }
 
 .number-field,
 .result-block {
-  min-height: 96px;
+  min-height: 86px;
 }
 
 .number-field {
@@ -122,7 +122,7 @@
 .result-block {
   display: flex;
   min-width: 0;
-  padding: 12px 14px;
+  padding: 10px 14px;
   border: 1px solid var(--primary-line);
   border-radius: 14px;
   background: linear-gradient(135deg, var(--primary-soft), #ffffff);
@@ -193,7 +193,7 @@
   display: flex;
   gap: 9px;
   margin-top: auto;
-  padding-top: 12px;
+  padding-top: 8px;
 }
 
 .button,
@@ -246,7 +246,7 @@
 }
 
 .css-panel {
-  margin-top: 16px;
+  margin-top: 12px;
   padding: 20px;
 }
 
@@ -260,7 +260,7 @@
 
 .css-heading .section-description {
   max-width: 700px;
-  margin-top: 7px;
+  margin-top: 5px;
 }
 
 .segment-control {
@@ -315,9 +315,9 @@
 .option-bar {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 14px;
-  padding: 10px;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 8px;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--surface-soft);
@@ -329,7 +329,7 @@
   min-width: 0;
   align-items: flex-start;
   gap: 10px;
-  padding: 8px 9px;
+  padding: 6px 8px;
   border-radius: 11px;
 }
 
@@ -430,7 +430,7 @@
   grid-template-columns: minmax(0, 1fr);
   align-items: stretch;
   gap: 14px;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .editor-pane {
@@ -456,7 +456,7 @@
 }
 
 .editor-pane .editor-head {
-  padding-bottom: 14px;
+  padding-bottom: 10px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -515,7 +515,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin: 8px 2px 4px;
+  margin: 6px 2px;
   color: var(--muted);
   font-family: "SFMono-Regular", Consolas, monospace;
   font-size: 11px;
