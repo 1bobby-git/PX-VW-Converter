@@ -153,6 +153,44 @@
     return match ? match[0] : "";
   }
 
+  var CONDITIONAL_PRELUDE_PATTERN = /^@(?:media|supports|container)\b/i;
+
+  function readConditionalPreludeEnd(text, startIndex) {
+    var slice = text.slice(startIndex, startIndex + 12);
+    if (!CONDITIONAL_PRELUDE_PATTERN.test(slice)) {
+      return -1;
+    }
+
+    var previous = text.charAt(startIndex - 1);
+    if (isIdentifierCharacter(previous)) {
+      return -1;
+    }
+
+    var index = startIndex + 1;
+
+    while (index < text.length) {
+      var character = text.charAt(index);
+
+      if (character === "/" && text.charAt(index + 1) === "*") {
+        index = readComment(text, index);
+        continue;
+      }
+
+      if (character === "\"" || character === "'") {
+        index = readString(text, index);
+        continue;
+      }
+
+      if (character === "{" || character === ";" || character === "}") {
+        return index;
+      }
+
+      index += 1;
+    }
+
+    return text.length;
+  }
+
   function scanAndTransformUnits(text, config, viewport, precision, stripZeroUnit, transform) {
     var output = "";
     var index = 0;
@@ -180,6 +218,15 @@
         output += text.slice(index, urlEnd);
         index = urlEnd;
         continue;
+      }
+
+      if (character === "@") {
+        var preludeEnd = readConditionalPreludeEnd(text, index);
+        if (preludeEnd !== -1) {
+          output += text.slice(index, preludeEnd);
+          index = preludeEnd;
+          continue;
+        }
       }
 
       if (isNumberStart(text, index) && !isIdentifierCharacter(text.charAt(index - 1))) {

@@ -35,6 +35,7 @@
 - 주석, 따옴표 문자열, `url(...)` 내부 값은 변환 대상에서 제외
 - `1e2px`, `5e-1vw` 같은 CSS 지수 표기 수치도 전체 값으로 변환하고, 계산 범위를 넘는 값은 원문 유지
 - `@media`, `@supports`, `@container`, `@keyframes`, CSS 중첩 규칙 처리
+- `@media`·`@supports`·`@container` 조건식(예: `min-width: 800px`) 안의 값은 변환하지 않고 그대로 두어 브레이크포인트를 보존하며, 규칙 블록 내부 선언만 변환
 
 ### CSS 문법·오타 검사
 
@@ -88,7 +89,7 @@ Node.js 22 이상에서 별도 패키지 설치 없이 전체 테스트를 실�
 node --test tests/*.test.js
 ```
 
-테스트 범위에는 단위 변환, 안전한 CSS 탐색, 중첩 규칙, 원본 포맷 보존, 출력 제외 선언 강조, 검증 요약 이동, 와이드 2열 편집기, 줄바꿈 방지, 탭 정지 시각 열 계산, 문법 오류 소스 처리, 문법 검사, 요청한 뷰포트 목록, 화이트 전용 UI, 실시간 처리, 동일 높이 레이아웃, 헤더 뷰포트 바 제거, 서체 최소 크기와 정적 자산 연결 검사가 포함됩니다. `main` 브랜치 푸시와 Pull Request마다 GitHub Actions가 JavaScript 문법 검사와 회귀 테스트를 자동 실행합니다.
+테스트 범위에는 단위 변환, 안전한 CSS 탐색, 중첩 규칙, 조건부 `@` 규칙 조건식 보존, 원본 포맷 보존, 출력 제외 선언 강조, 검증 요약 이동, 와이드 2열 편집기, 줄바꿈 방지, 탭 정지 시각 열 계산, 문법 오류 소스 처리, 문법 검사, 요청한 뷰포트 목록, 화이트 전용 UI, 실시간 처리, 동일 높이 레이아웃, 헤더 뷰포트 바 제거, 서체 최소 크기와 정적 자산 연결 검사가 포함됩니다. `main` 브랜치 푸시와 Pull Request마다 GitHub Actions가 JavaScript 문법 검사와 회귀 테스트를 자동 실행합니다.
 
 ## 구성
 
@@ -97,6 +98,7 @@ node --test tests/*.test.js
 ├── .github/workflows/test.yml  # JavaScript 문법 및 회귀 테스트 자동화
 ├── tests/
 │   ├── class-attribute-typo.test.js # class 속성 오타 검사
+│   ├── at-rule-prelude.test.js       # 조건부 @ 규칙 조건식 보존 회귀 테스트
 │   ├── converter-core.test.js       # 변환·문법 검사 엔진 테스트
 │   ├── editor-layout-navigation.test.js # 편집기 레이아웃·검증 이동 검사
 │   ├── format-preservation.test.js      # 원본 포맷 보존 회귀 테스트
