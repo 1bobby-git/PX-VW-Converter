@@ -333,6 +333,17 @@
   border-radius: 11px;
 }
 
+.declaration-options {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.declaration-options .check-box {
+  border-radius: 50%;
+}
+
 .check-control {
   transition: background var(--transition);
   cursor: pointer;
@@ -386,6 +397,16 @@
 
 .check-control input:focus-visible + .check-box {
   box-shadow: 0 0 0 4px var(--focus);
+}
+
+.declaration-options input:checked + .check-box::after {
+  width: 7px;
+  height: 7px;
+  margin: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #ffffff;
+  transform: none;
 }
 
 .realtime-control {

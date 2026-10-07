@@ -110,6 +110,6 @@ test("커서가 짧은 끝줄에 있을 때 가로 스크롤을 보정해 공백
   assert.match(app, /function ensureCaretLineVisible\(\)/);
   assert.match(app, /function getTextRect\(root, offset\)/);
   assert.match(app, /ensureCaretLineVisible\.active/);
-  assert.match(app, /syncInputHighlightGeometry\(\);\s*ensureCaretLineVisible\(\)/);
-  assert.match(app, /elements\.cursorPosition\.textContent = line \+ "행 " \+ column \+ "열";\s*syncInputHighlightGeometry\(\);\s*renderInputSelection\(\);\s*ensureCaretLineVisible\(\)/);
+  assert.match(app, /var cursorChanged = source !== lastCursorSource \|\| offset !== lastCursorOffset/);
+  assert.match(app, /elements\.cursorPosition\.textContent = line \+ "행 " \+ column \+ "열";\s*syncInputHighlightGeometry\(\);\s*renderInputSelection\(\);\s*if \(cursorChanged\) \{\s*ensureCaretLineVisible\(\)/);
 });

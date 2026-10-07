@@ -242,14 +242,25 @@
       </div>
 
       <div class="option-bar">
-        <label class="check-control">
-          <input id="onlyMatchingDeclarations" type="checkbox" checked>
-          <span class="check-box" aria-hidden="true"></span>
-          <span>
-            <strong>대상 단위가 포함된 선언만 유지</strong>
-            <small>변환할 값이 없는 선언과 빈 규칙을 정리합니다.</small>
-          </span>
-        </label>
+        <fieldset class="declaration-options">
+          <legend class="sr-only">CSS 속성 처리</legend>
+          <label class="check-control">
+            <input id="preserveAllDeclarations" type="radio" name="declarationMode" value="all">
+            <span class="check-box" aria-hidden="true"></span>
+            <span>
+              <strong>전체 속성 유지</strong>
+              <small>색상·배치 등 모든 속성을 남기고 대상 단위만 변환합니다.</small>
+            </span>
+          </label>
+          <label class="check-control">
+            <input id="onlyMatchingDeclarations" type="radio" name="declarationMode" value="matching" checked>
+            <span class="check-box" aria-hidden="true"></span>
+            <span>
+              <strong>대상 단위 속성만 유지</strong>
+              <small>변환할 값이 없는 속성과 빈 규칙을 제거합니다.</small>
+            </span>
+          </label>
+        </fieldset>
 
         <label class="check-control">
           <input id="stripZeroUnit" type="checkbox" checked>

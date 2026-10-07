@@ -10,6 +10,8 @@
   var MAX_FILE_SIZE = 2 * 1024 * 1024;
   var liveUpdateFrame = null;
   var highlightSyncFrame = null;
+  var lastCursorSource = null;
+  var lastCursorOffset = null;
   var inputHighlightResizeObserver = null;
   var toastTimer = null;
   var currentFileName = "";
@@ -58,6 +60,7 @@
     btnClearVw: byId("btnClearVw"),
     directionPxVw: byId("directionPxVw"),
     directionVwPx: byId("directionVwPx"),
+    preserveAllDeclarations: byId("preserveAllDeclarations"),
     onlyMatchingDeclarations: byId("onlyMatchingDeclarations"),
     stripZeroUnit: byId("stripZeroUnit"),
     cssInputEditor: byId("cssInputEditor"),
@@ -486,6 +489,9 @@
 
     var source = elements.cssInput.value || "";
     var offset = Math.max(0, Math.min(source.length, Number(elements.cssInput.selectionStart) || 0));
+    var cursorChanged = source !== lastCursorSource || offset !== lastCursorOffset;
+    lastCursorSource = source;
+    lastCursorOffset = offset;
     var before = source.slice(0, offset);
     var line = before.split("\n").length;
     var lineStart = before.lastIndexOf("\n") + 1;
@@ -494,7 +500,9 @@
     elements.cursorPosition.textContent = line + "행 " + column + "열";
     syncInputHighlightGeometry();
     renderInputSelection();
-    ensureCaretLineVisible();
+    if (cursorChanged) {
+      ensureCaretLineVisible();
+    }
   }
 
   function scheduleHighlightSync() {
@@ -503,8 +511,7 @@
     }
     highlightSyncFrame = window.requestAnimationFrame(function () {
       highlightSyncFrame = null;
-      syncInputHighlightGeometry();
-      ensureCaretLineVisible();
+      updateCursorPosition();
     });
   }
 
@@ -948,6 +955,7 @@
 
       if (typeof settings.onlyMatchingDeclarations === "boolean") {
         elements.onlyMatchingDeclarations.checked = settings.onlyMatchingDeclarations;
+        elements.preserveAllDeclarations.checked = !settings.onlyMatchingDeclarations;
       }
       if (typeof settings.stripZeroUnit === "boolean") {
         elements.stripZeroUnit.checked = settings.stripZeroUnit;
@@ -1180,8 +1188,8 @@
       updateDirectionUi(true);
     });
 
-    [elements.onlyMatchingDeclarations, elements.stripZeroUnit].forEach(function (checkbox) {
-      checkbox.addEventListener("change", function () {
+    [elements.preserveAllDeclarations, elements.onlyMatchingDeclarations, elements.stripZeroUnit].forEach(function (control) {
+      control.addEventListener("change", function () {
         saveSettings();
         runLivePipeline(false);
       });
@@ -1202,12 +1210,10 @@
     ["click", "keyup", "select"].forEach(function (eventName) {
       elements.cssInput.addEventListener(eventName, updateCursorPosition);
     });
+    // 사용자의 스크롤 위치를 보존하고 미러만 따라가게 합니다.
     elements.cssInput.addEventListener("scroll", function () {
       syncInputHighlightGeometry();
       renderInputSelection();
-      if (!ensureCaretLineVisible.active) {
-        ensureCaretLineVisible();
-      }
     });
     elements.cssInput.addEventListener("compositionstart", function () {
       elements.cssInputEditor.classList.add("is-composing");
