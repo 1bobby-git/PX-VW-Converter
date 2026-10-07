@@ -241,6 +241,27 @@
     renderInputSelection();
   }
 
+  function handleEditorWheel(event) {
+    // 브라우저별 Shift+휠 차이와 관계없이 가로 이동을 지원합니다.
+    if (!event.shiftKey || event.deltaX || !event.deltaY) {
+      return;
+    }
+
+    var editor = event.currentTarget;
+    var maxScroll = Math.max(0, editor.scrollWidth - editor.clientWidth);
+    if (!maxScroll) {
+      return;
+    }
+
+    var step = event.deltaMode === 2 ? editor.clientWidth :
+      event.deltaMode === 1 ? parseFloat(window.getComputedStyle(editor).lineHeight) || 24 : 1;
+    editor.scrollLeft = Math.max(0, Math.min(maxScroll, editor.scrollLeft + event.deltaY * step));
+    event.preventDefault();
+    if (editor === elements.cssInput) {
+      syncInputHighlightGeometry();
+    }
+  }
+
   function getTextRect(root, offset) {
     if (!root || !Number.isFinite(offset) || offset < 0) {
       return null;
@@ -1214,6 +1235,9 @@
     elements.cssInput.addEventListener("scroll", function () {
       syncInputHighlightGeometry();
       renderInputSelection();
+    });
+    [elements.cssInput, elements.cssOutput].forEach(function (editor) {
+      editor.addEventListener("wheel", handleEditorWheel, { passive: false });
     });
     elements.cssInput.addEventListener("compositionstart", function () {
       elements.cssInputEditor.classList.add("is-composing");

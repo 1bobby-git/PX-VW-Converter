@@ -16,11 +16,11 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
   <link rel="stylesheet" href="./styles-1.css">
-  <link rel="stylesheet" href="./styles-2.css">
-  <link rel="stylesheet" href="./styles-3.css">
+  <link rel="stylesheet" href="./styles-2.css?v=20261007-2">
+  <link rel="stylesheet" href="./styles-3.css?v=20261007-2">
   <link rel="stylesheet" href="./styles-4.css">
   <script src="./converter-core.js" defer></script>
-  <script src="./app-ui.js" defer></script>
+  <script src="./app-ui.js?v=20261007-2" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#mainContent">본문 바로가기</a>
@@ -244,38 +244,30 @@
       <div class="option-bar">
         <fieldset class="declaration-options">
           <legend class="sr-only">CSS 속성 처리</legend>
-          <label class="check-control">
-            <input id="preserveAllDeclarations" type="radio" name="declarationMode" value="all">
-            <span class="check-box" aria-hidden="true"></span>
-            <span>
-              <strong>전체 속성 유지</strong>
-              <small>색상·배치 등 모든 속성을 남기고 대상 단위만 변환합니다.</small>
-            </span>
+          <input id="preserveAllDeclarations" type="radio" name="declarationMode" value="all">
+          <label for="preserveAllDeclarations" title="색상·배치 등 모든 속성을 남기고 대상 단위만 변환합니다.">
+            <strong>전체 속성 유지</strong>
           </label>
-          <label class="check-control">
-            <input id="onlyMatchingDeclarations" type="radio" name="declarationMode" value="matching" checked>
-            <span class="check-box" aria-hidden="true"></span>
-            <span>
-              <strong>대상 단위 속성만 유지</strong>
-              <small>변환할 값이 없는 속성과 빈 규칙을 제거합니다.</small>
-            </span>
+          <input id="onlyMatchingDeclarations" type="radio" name="declarationMode" value="matching" checked>
+          <label for="onlyMatchingDeclarations" title="변환할 값이 없는 속성과 빈 규칙을 제거합니다.">
+            <strong>대상 단위 속성만 유지</strong>
           </label>
         </fieldset>
 
-        <label class="check-control">
+        <label class="check-control" title="0px, 0vw를 0으로 줄입니다.">
           <input id="stripZeroUnit" type="checkbox" checked>
           <span class="check-box" aria-hidden="true"></span>
           <span>
             <strong>0 단위 정리</strong>
-            <small><code>0px</code>, <code>0vw</code>를 <code>0</code>으로 줄입니다.</small>
+            <small class="sr-only"><code>0px</code>, <code>0vw</code>를 <code>0</code>으로 줄입니다.</small>
           </span>
         </label>
 
         <div class="realtime-control" aria-live="polite">
           <span class="realtime-icon" aria-hidden="true"><svg><use href="#icon-check"></use></svg></span>
           <span>
-            <strong>실시간 변환·문법 검사</strong>
-            <small id="realtimeStatus">실시간 변환·검증 대기</small>
+            <strong>실시간 변환·검사</strong>
+            <small id="realtimeStatus" class="sr-only">실시간 변환·검증 대기</small>
           </span>
         </div>
       </div>

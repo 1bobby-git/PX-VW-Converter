@@ -1,9 +1,12 @@
 textarea {
   display: block;
   width: 100%;
+  min-width: 0;
   min-height: var(--editor-height);
   padding: 18px 20px;
   overflow: auto;
+  overflow-x: scroll;
+  overscroll-behavior-x: contain;
   resize: vertical;
   border: 1px solid var(--line);
   border-radius: 13px;
@@ -20,7 +23,7 @@ textarea {
   word-break: normal;
   scrollbar-color: var(--line-strong) transparent;
   scrollbar-gutter: stable;
-  scrollbar-width: thin;
+  scrollbar-width: auto;
   flex: 1 1 auto;
   transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
 }
@@ -43,6 +46,7 @@ textarea[aria-invalid="true"] {
   position: relative;
   min-height: var(--editor-height);
   overflow: hidden;
+  overflow: clip;
   border: 1px solid var(--line);
   border-radius: 13px;
   background: var(--surface-soft);
@@ -184,6 +188,10 @@ textarea[aria-invalid="true"] {
   color: var(--danger);
   font-weight: 800;
   white-space: nowrap;
+}
+
+.unconverted-legend[hidden] {
+  display: none;
 }
 
 .unconverted-legend::before {
@@ -638,10 +646,13 @@ textarea[aria-invalid="true"] {
   }
 
   .option-bar {
-    grid-template-columns: 1fr;
     gap: 6px;
     margin-top: 8px;
     padding: 7px;
+  }
+
+  .option-bar > .realtime-control {
+    margin-left: 0;
   }
 
   .workspace-footer {

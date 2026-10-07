@@ -313,9 +313,10 @@
 }
 
 .option-bar {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
   margin-top: 10px;
   padding: 8px;
   border: 1px solid var(--line);
@@ -334,14 +335,45 @@
 }
 
 .declaration-options {
+  display: inline-flex;
   min-width: 0;
   margin: 0;
-  padding: 0;
-  border: 0;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
 }
 
-.declaration-options .check-box {
-  border-radius: 50%;
+.declaration-options label {
+  display: flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 4px 8px;
+  border-radius: 5px;
+  color: var(--muted-strong);
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.declaration-options input:checked + label {
+  color: var(--primary);
+  background: var(--primary-soft);
+  box-shadow: inset 0 0 0 1px var(--primary-line);
+}
+
+.declaration-options input:focus-visible + label {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.option-bar > .check-control,
+.option-bar > .realtime-control {
+  align-items: center;
+}
+
+.option-bar > .realtime-control {
+  margin-left: auto;
 }
 
 .check-control {
@@ -353,7 +385,8 @@
   background: var(--surface-hover);
 }
 
-.check-control input {
+.check-control input,
+.declaration-options input {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -397,16 +430,6 @@
 
 .check-control input:focus-visible + .check-box {
   box-shadow: 0 0 0 4px var(--focus);
-}
-
-.declaration-options input:checked + .check-box::after {
-  width: 7px;
-  height: 7px;
-  margin: 0;
-  border: 0;
-  border-radius: 50%;
-  background: #ffffff;
-  transform: none;
 }
 
 .realtime-control {
