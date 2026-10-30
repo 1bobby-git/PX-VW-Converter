@@ -105,3 +105,25 @@ test("@keyframes와 @page 등 그룹 외 규칙은 실제 px 값을 계속 변�
   assert.match(page.text, /margin: 5vw;/);
   assert.equal(page.count, 1);
 });
+
+test("@custom-media 조건식도 @media처럼 원문을 유지한다", () => {
+  const source = [
+    "@custom-media --narrow (max-width: 800px);",
+    "@custom-media --tall (width >= 1100px) and (min-height: 600px);",
+    "@media (--narrow) { .card { width: 16px; } }"
+  ].join("\n");
+  const result = core.scanAndTransformUnits(source, pxToVwConfig(), 320, 2, true, true);
+
+  assert.match(result.text, /@custom-media --narrow \(max-width: 800px\);/);
+  assert.match(result.text, /@custom-media --tall \(width >= 1100px\) and \(min-height: 600px\);/);
+  assert.match(result.text, /width: 5vw;/);
+  assert.equal(result.count, 1);
+
+  const upper = core.scanAndTransformUnits("@CUSTOM-MEDIA --x (min-width: 50vw);", vwToPxConfig(), 320, 2, true, true);
+  assert.equal(upper.text, "@CUSTOM-MEDIA --x (min-width: 50vw);");
+  assert.equal(upper.count, 0);
+
+  const filtered = core.filterMatchingDeclarations(source, "px");
+  assert.match(filtered.text, /@custom-media --narrow \(max-width: 800px\);/);
+  assert.match(filtered.text, /width: 16px;/);
+});

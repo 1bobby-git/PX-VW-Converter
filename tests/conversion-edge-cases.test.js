@@ -88,6 +88,7 @@ test("zero-unit exceptions still apply after a comment before the declaration", 
 
 test("zero-unit cleanup covers uppercase functions, -ms-flex, progress() and unclosed calc", () => {
   assert.equal(convert("width: CALC(0PX + 10PX);", PX_TO_VW, 320, 2, true).text, "width: CALC(0vw + 3.13vw);");
+  assert.equal(convert("height: MIN(0PX, 10PX);", PX_TO_VW, 320, 2, true).text, "height: MIN(0vw, 3.13vw);");
   assert.equal(convert("-ms-flex: 1 0px;", PX_TO_VW, 320, 2, true).text, "-ms-flex: 1 0vw;");
   assert.equal(
     convert("opacity: progress(0px, 0px, 100px);", PX_TO_VW, 320, 2, true).text,
@@ -107,6 +108,74 @@ test("@import conditions survive a semicolon inside an unquoted data: URL", () =
   assert.match(result.text, /\(min-width: 800px\);/);
   assert.match(result.text, /width: 5vw;/);
   assert.equal(result.count, 1);
+
+  const twoSemicolons = "@import url(data:text/css;charset=utf-8;base64,LmF7fQ==) (min-width: 800px);";
+  assert.equal(convert(twoSemicolons, PX_TO_VW, 320, 2, true).text, twoSemicolons);
+});
+
+test("filter mode keeps top-level at-rule statements when the input has no rule block", () => {
+  const importOnly = "@import url(a.css) (min-width: 800px);";
+  const importResult = core.filterMatchingDeclarations(importOnly, "px");
+  assert.equal(importResult.text, importOnly);
+  assert.equal(importResult.stats.totalDeclarations, 0);
+  assert.equal(importResult.stats.removedDeclarations, 0);
+  assert.deepEqual(importResult.removedRanges, []);
+  assert.equal(core.filterMatchingDeclarations("@import url(a.css)", "px").text, "@import url(a.css)");
+  assert.equal(core.filterMatchingDeclarations("@import url(a.css) (min-width: 50vw);", "vw").text, "@import url(a.css) (min-width: 50vw);");
+
+  const source = [
+    "@charset \"utf-8\";",
+    "@import url(a.css) screen and (min-width: 800px);",
+    "@layer base, components;",
+    "@namespace svg url(http://www.w3.org/2000/svg);",
+    "width: 16px;",
+    "color: red;"
+  ].join("\n");
+  const filtered = core.filterMatchingDeclarations(source, "px");
+  assert.equal(filtered.text, source.replace("\ncolor: red;", ""));
+  assert.deepEqual(filtered.stats, { totalDeclarations: 2, keptDeclarations: 1, removedDeclarations: 1, removedRules: 0 });
+  assert.deepEqual(filtered.removedRanges, [{ start: source.indexOf("color"), end: source.length }]);
+  assert.match(convert(filtered.text, PX_TO_VW, 320, 2, true).text, /\(min-width: 800px\);\n@layer base, components;[^]*\nwidth: 5vw;$/);
+
+  // At-rule statements inside a style rule body keep the existing declaration filter.
+  assert.equal(core.filterMatchingDeclarations(".a { @apply p-4; width: 16px; }", "px").text, ".a { width: 16px; }");
+});
+
+test("selectors are never converted so escaped class names keep matching the HTML", () => {
+  const source = [
+    ".w-\\[16px\\] { width: 16px; }",
+    ".\\31 6px, .a[data-size=16px]:not(.p-\\[8px\\]) { margin: 8px 0px; }",
+    ".card { .p-\\[8px\\]:hover { padding: 8px; } }",
+    "@media (min-width: 800px) { .md\\:w-\\[32px\\] { width: 32px } }"
+  ].join("\n");
+  const result = convert(source, PX_TO_VW, 320, 2, true);
+
+  assert.equal(result.text, [
+    ".w-\\[16px\\] { width: 5vw; }",
+    ".\\31 6px, .a[data-size=16px]:not(.p-\\[8px\\]) { margin: 2.5vw 0; }",
+    ".card { .p-\\[8px\\]:hover { padding: 2.5vw; } }",
+    "@media (min-width: 800px) { .md\\:w-\\[32px\\] { width: 10vw } }"
+  ].join("\n"));
+  assert.equal(result.count, 5);
+  assert.equal(convert(".w-\\[50vw\\] { width: 50vw; }", VW_TO_PX, 320, 2, true).text, ".w-\\[50vw\\] { width: 160px; }");
+  assert.equal(
+    convert("@scope (.w-\\[16px\\]) to (.h-\\[8px\\]) { .a { width: 16px; } }\n@custom-selector :--w .w-\\[16px\\];", PX_TO_VW, 320, 2, true).text,
+    "@scope (.w-\\[16px\\]) to (.h-\\[8px\\]) { .a { width: 5vw; } }\n@custom-selector :--w .w-\\[16px\\];"
+  );
+});
+
+test("declaration values next to braces in strings and url() are still converted", () => {
+  const source = [
+    "a[title=\"{16px}\"] { content: \"{\"; width: 16px; }",
+    ".b { background: url(data:image/svg+xml,<svg><style>.c{fill:red}</style></svg>) 16px 0px; }",
+    "width: 16px; height: 8px"
+  ].join("\n");
+
+  assert.equal(convert(source, PX_TO_VW, 320, 2, true).text, [
+    "a[title=\"{16px}\"] { content: \"{\"; width: 5vw; }",
+    ".b { background: url(data:image/svg+xml,<svg><style>.c{fill:red}</style></svg>) 5vw 0; }",
+    "width: 5vw; height: 2.5vw"
+  ].join("\n"));
 });
 
 test("rounding keeps integer digits between 1e15 and 2^53", () => {
