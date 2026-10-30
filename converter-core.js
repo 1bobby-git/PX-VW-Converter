@@ -168,7 +168,7 @@
     return match ? match[0] : "";
   }
 
-  var CONDITIONAL_PRELUDE_PATTERN = /^@(?:media|supports|container|import)\b/i;
+  var CONDITIONAL_PRELUDE_PATTERN = /^@(?:media|custom-media|supports|container|import|scope|custom-selector)\b/i;
   var MATH_FUNCTION_PATTERN = /^(?:-(?:webkit|moz)-)?(?:calc|calc-size|min|max|clamp|round|mod|rem|abs|sign|hypot|sqrt|pow|log|exp|sin|cos|tan|asin|acos|atan|atan2|progress|media-progress|container-progress)$/;
   // Unitless 0 changes meaning here: custom properties are often reused inside calc(),
   // and the flex shorthand reads a bare 0 as flex-shrink instead of flex-basis.
@@ -192,7 +192,7 @@
   }
 
   function readConditionalPreludeEnd(text, startIndex) {
-    var slice = text.slice(startIndex, startIndex + 12);
+    var slice = text.slice(startIndex, startIndex + 24);
     if (!CONDITIONAL_PRELUDE_PATTERN.test(slice)) {
       return -1;
     }
@@ -232,15 +232,87 @@
     return text.length;
   }
 
+  // Returns the index of the "{" that opens a style rule when the statement starting at
+  // startIndex is a selector, or -1 for declarations, at-rules and unterminated text.
+  // Selectors are copied verbatim: escaped class names such as .w-\[16px\] or .\31 6px
+  // must keep matching the HTML. A "{" inside parentheses or brackets does not open a
+  // block (as in findNextTopLevelToken), but ";" and "}" always end the lookahead so a
+  // stray "(" cannot make it scan the rest of the input.
+  function readSelectorEnd(text, startIndex) {
+    var index = startIndex;
+    var started = false;
+    var depth = 0;
+
+    while (index < text.length) {
+      var character = text.charAt(index);
+
+      if (character === "/" && text.charAt(index + 1) === "*") {
+        index = readComment(text, index);
+        continue;
+      }
+
+      if (!started) {
+        if (/\s/.test(character)) {
+          index += 1;
+          continue;
+        }
+        if (character === "@") {
+          return -1;
+        }
+        started = true;
+      }
+
+      if (character === "\\") {
+        index += 2;
+        continue;
+      }
+
+      if (character === "\"" || character === "'") {
+        index = readString(text, index);
+        continue;
+      }
+
+      if (startsUrlFunction(text, index)) {
+        index = readUrlFunction(text, index);
+        continue;
+      }
+
+      if (character === "(" || character === "[") {
+        depth += 1;
+      } else if (character === ")" || character === "]") {
+        depth = Math.max(0, depth - 1);
+      } else if (character === "{" && depth === 0) {
+        return index;
+      } else if (character === ";" || character === "}") {
+        return -1;
+      }
+
+      index += 1;
+    }
+
+    return -1;
+  }
+
   function scanAndTransformUnits(text, config, viewport, precision, stripZeroUnit, transform) {
     var output = "";
     var index = 0;
     var convertedCount = 0;
     var mathStack = [];
     var statementStart = 0;
+    var atStatementStart = true;
 
     while (index < text.length) {
       var character = text.charAt(index);
+
+      if (atStatementStart) {
+        atStatementStart = false;
+        var selectorEnd = readSelectorEnd(text, index);
+        if (selectorEnd !== -1) {
+          output += text.slice(index, selectorEnd);
+          index = selectorEnd;
+          continue;
+        }
+      }
 
       if (character === "/" && text.charAt(index + 1) === "*") {
         var commentEnd = readComment(text, index);
@@ -310,6 +382,7 @@
       } else if (character === ";" || character === "{" || character === "}") {
         mathStack = [];
         statementStart = index + 1;
+        atStatementStart = true;
       }
 
       output += character;
@@ -492,13 +565,16 @@
     });
   }
 
-  function filterContainer(text, sourceUnit, context, baseOffset) {
+  function filterContainer(text, sourceUnit, context, baseOffset, isRoot) {
     var cursor = 0;
     var output = "";
     var keptContent = false;
     var stats = createFilterStats();
     var removedRanges = [];
     var absoluteBase = Number.isFinite(baseOffset) ? baseOffset : 0;
+    // At-rule statements (@import, @charset, @layer a, b; ...) are not declarations and
+    // carry no convertible value, so they stay at the top level even without a rule block.
+    var keepsAtRuleStatements = context === "stylesheet" || isRoot === true;
 
     while (cursor < text.length) {
       var token = findNextTopLevelToken(text, cursor);
@@ -511,7 +587,7 @@
           if (keptContent) {
             output += trailing;
           }
-        } else if (context === "stylesheet" && isAtRuleStatement(trailing)) {
+        } else if (keepsAtRuleStatements && isAtRuleStatement(trailing)) {
           output += trailing;
           keptContent = true;
         } else if (context === "rule") {
@@ -552,7 +628,7 @@
           continue;
         }
 
-        if (context === "stylesheet" && isAtRuleStatement(statement)) {
+        if (keepsAtRuleStatements && isAtRuleStatement(statement)) {
           output += statement;
           keptContent = true;
           continue;
@@ -616,7 +692,7 @@
 
   function filterMatchingDeclarations(text, sourceUnit) {
     var context = hasTopLevelBlock(text) ? "stylesheet" : "rule";
-    var result = filterContainer(text, sourceUnit, context, 0);
+    var result = filterContainer(text, sourceUnit, context, 0, true);
 
     return {
       text: result.text,
