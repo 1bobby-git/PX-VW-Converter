@@ -19,12 +19,27 @@
     return Math.abs(value) < threshold ? 0 : value;
   }
 
+  function roundToPrecision(value, precision) {
+    var factor = Math.pow(10, precision);
+    // toPrecision(15) drops binary floating point noise (1.005 * 100 === 100.49999999999999),
+    // so decimal ties round half away from zero the same way toFixed does for exact ties.
+    var scaled = Number((Math.abs(value) * factor).toPrecision(15));
+    if (!(Math.abs(value) * factor < 1e15)) {
+      // toPrecision(15) is lossless only below 1e15; above it no fractional digit is
+      // left to round, so keep the original value and toFixed output.
+      return value;
+    }
+
+    var rounded = Math.round(scaled) / factor;
+    return value < 0 ? -rounded : rounded;
+  }
+
   function formatNumber(value, precision) {
     if (!Number.isFinite(value)) {
       return "";
     }
 
-    var normalized = normalizeNegativeZero(value, precision);
+    var normalized = normalizeNegativeZero(roundToPrecision(value, precision), precision);
     var fixed = normalized.toFixed(precision);
 
     if (precision === 0) {
@@ -153,7 +168,28 @@
     return match ? match[0] : "";
   }
 
-  var CONDITIONAL_PRELUDE_PATTERN = /^@(?:media|supports|container)\b/i;
+  var CONDITIONAL_PRELUDE_PATTERN = /^@(?:media|supports|container|import)\b/i;
+  var MATH_FUNCTION_PATTERN = /^(?:-(?:webkit|moz)-)?(?:calc|calc-size|min|max|clamp|round|mod|rem|abs|sign|hypot|sqrt|pow|log|exp|sin|cos|tan|asin|acos|atan|atan2|progress|media-progress|container-progress)$/;
+  // Unitless 0 changes meaning here: custom properties are often reused inside calc(),
+  // and the flex shorthand reads a bare 0 as flex-shrink instead of flex-basis.
+  // Comments may precede the property name (for example one that ends the previous line).
+  var ZERO_UNIT_PROPERTY_PATTERN = /^(?:\s|\/\*[\s\S]*?\*\/)*(?:--[^\s:]*|(?:-(?:webkit|ms)-)?flex)\s*:/i;
+
+  function functionNameBefore(text, index) {
+    var start = index;
+    while (start > 0 && /[a-zA-Z0-9_-]/.test(text.charAt(start - 1))) {
+      start -= 1;
+    }
+    return text.slice(start, index).toLowerCase();
+  }
+
+  function keepsZeroUnit(text, statementStart, index, mathStack) {
+    // calc(0 + 10px) is invalid CSS: a unitless 0 is a <number> inside math functions.
+    if (mathStack.length > 0 && mathStack[mathStack.length - 1]) {
+      return true;
+    }
+    return ZERO_UNIT_PROPERTY_PATTERN.test(text.slice(statementStart, index));
+  }
 
   function readConditionalPreludeEnd(text, startIndex) {
     var slice = text.slice(startIndex, startIndex + 12);
@@ -181,6 +217,11 @@
         continue;
       }
 
+      if (startsUrlFunction(text, index)) {
+        index = readUrlFunction(text, index);
+        continue;
+      }
+
       if (character === "{" || character === ";" || character === "}") {
         return index;
       }
@@ -195,6 +236,8 @@
     var output = "";
     var index = 0;
     var convertedCount = 0;
+    var mathStack = [];
+    var statementStart = 0;
 
     while (index < text.length) {
       var character = text.charAt(index);
@@ -244,7 +287,7 @@
           }
           var replacement;
 
-          if (stripZeroUnit && numericValue === 0) {
+          if (stripZeroUnit && numericValue === 0 && !keepsZeroUnit(text, statementStart, index, mathStack)) {
             replacement = "0";
           } else {
             replacement = formatNumber(convertedValue, precision) + config.targetUnit;
@@ -255,6 +298,18 @@
           convertedCount += 1;
           continue;
         }
+      }
+
+      if (character === "(") {
+        mathStack.push(
+          MATH_FUNCTION_PATTERN.test(functionNameBefore(text, index)) ||
+          (mathStack.length > 0 && mathStack[mathStack.length - 1])
+        );
+      } else if (character === ")") {
+        mathStack.pop();
+      } else if (character === ";" || character === "{" || character === "}") {
+        mathStack = [];
+        statementStart = index + 1;
       }
 
       output += character;
