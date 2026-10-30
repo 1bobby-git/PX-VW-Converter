@@ -24,8 +24,9 @@
     // toPrecision(15) drops binary floating point noise (1.005 * 100 === 100.49999999999999),
     // so decimal ties round half away from zero the same way toFixed does for exact ties.
     var scaled = Number((Math.abs(value) * factor).toPrecision(15));
-    if (!(scaled < Number.MAX_SAFE_INTEGER)) {
-      // No fractional digits are left to round; keep the original value and toFixed output.
+    if (!(Math.abs(value) * factor < 1e15)) {
+      // toPrecision(15) is lossless only below 1e15; above it no fractional digit is
+      // left to round, so keep the original value and toFixed output.
       return value;
     }
 
@@ -168,10 +169,11 @@
   }
 
   var CONDITIONAL_PRELUDE_PATTERN = /^@(?:media|supports|container|import)\b/i;
-  var MATH_FUNCTION_PATTERN = /^(?:-(?:webkit|moz)-)?(?:calc|calc-size|min|max|clamp|round|mod|rem|abs|sign|hypot|sqrt|pow|log|exp|sin|cos|tan|asin|acos|atan|atan2)$/;
+  var MATH_FUNCTION_PATTERN = /^(?:-(?:webkit|moz)-)?(?:calc|calc-size|min|max|clamp|round|mod|rem|abs|sign|hypot|sqrt|pow|log|exp|sin|cos|tan|asin|acos|atan|atan2|progress|media-progress|container-progress)$/;
   // Unitless 0 changes meaning here: custom properties are often reused inside calc(),
   // and the flex shorthand reads a bare 0 as flex-shrink instead of flex-basis.
-  var ZERO_UNIT_PROPERTY_PATTERN = /^\s*(?:--[^\s:]*|(?:-(?:webkit|ms)-)?flex)\s*:/i;
+  // Comments may precede the property name (for example one that ends the previous line).
+  var ZERO_UNIT_PROPERTY_PATTERN = /^(?:\s|\/\*[\s\S]*?\*\/)*(?:--[^\s:]*|(?:-(?:webkit|ms)-)?flex)\s*:/i;
 
   function functionNameBefore(text, index) {
     var start = index;

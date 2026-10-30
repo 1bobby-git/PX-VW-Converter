@@ -78,3 +78,39 @@ test("@import media query conditions keep their breakpoints", () => {
   assert.match(result.text, /width: 5vw;/);
   assert.equal(result.count, 1);
 });
+
+test("zero-unit exceptions still apply after a comment before the declaration", () => {
+  const source = ".a {\n  color: red; /* brand */\n  flex: 1 0px;\n  --gap: 0px; /* spacing */\n  --pad: 0px;\n  /* note */ margin: 0px;\n}";
+  const result = convert(source, PX_TO_VW, 320, 2, true);
+
+  assert.equal(result.text, ".a {\n  color: red; /* brand */\n  flex: 1 0vw;\n  --gap: 0vw; /* spacing */\n  --pad: 0vw;\n  /* note */ margin: 0;\n}");
+});
+
+test("zero-unit cleanup covers uppercase functions, -ms-flex, progress() and unclosed calc", () => {
+  assert.equal(convert("width: CALC(0PX + 10PX);", PX_TO_VW, 320, 2, true).text, "width: CALC(0vw + 3.13vw);");
+  assert.equal(convert("-ms-flex: 1 0px;", PX_TO_VW, 320, 2, true).text, "-ms-flex: 1 0vw;");
+  assert.equal(
+    convert("opacity: progress(0px, 0px, 100px);", PX_TO_VW, 320, 2, true).text,
+    "opacity: progress(0vw, 0vw, 31.25vw);"
+  );
+  // An unclosed calc( must not keep later declarations in math context.
+  assert.equal(
+    convert(".a { width: calc(0px + 1px; } .b { margin: 0px; }", PX_TO_VW, 320, 2, true).text,
+    ".a { width: calc(0vw + 0.31vw; } .b { margin: 0; }"
+  );
+});
+
+test("@import conditions survive a semicolon inside an unquoted data: URL", () => {
+  const source = "@import url(data:text/css;base64,LmF7fQ==) (min-width: 800px);\n.a { width: 16px; }";
+  const result = convert(source, PX_TO_VW, 320, 2, true);
+
+  assert.match(result.text, /\(min-width: 800px\);/);
+  assert.match(result.text, /width: 5vw;/);
+  assert.equal(result.count, 1);
+});
+
+test("rounding keeps integer digits between 1e15 and 2^53", () => {
+  assert.equal(core.formatNumber(4503599627370497, 0), "4503599627370497");
+  assert.equal(core.formatNumber(1234567890.1234567, 6), "1234567890.123457");
+  assert.equal(core.formatNumber(1.005, 2), "1.01");
+});
